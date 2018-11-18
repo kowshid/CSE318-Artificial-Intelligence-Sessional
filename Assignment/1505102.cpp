@@ -2,10 +2,15 @@
 #include<queue>
 #include<vector>
 #include<stdio.h>
+#include <time.h>
+#include <ctime>
 
 using namespace std;
 
 int maxCapacity;
+time_t start;
+time_t finish;
+double elapsed_secs;
 
 class Node
 {
@@ -49,7 +54,6 @@ Node *answer;
 
 bool check(Node *node)
 {
-    //int sz = vect.size();
     if(node == 0) return false;
 
     for(int i = 0; i < expanded.size(); i++)
@@ -82,8 +86,8 @@ void print()
     int iterations = path.size();
     int expantion = expanded.size();
 
-    printf("Total iterations: %d\n", iterations);
-    printf("Total expantion: %d\n", expantion);
+    //printf("Total iterations: %d\n", iterations);
+    //printf("Total expantion: %d\n", expantion);
 
     for(int i = iterations-1; i >= 0; i--)
     {
@@ -96,9 +100,17 @@ void print()
             printf("(%d, %d) << (%d, %d)\n", path[i]->mis1, path[i]->can1, path[i]->mis2, path[i]->can2);
         }
     }
+
+    printf("Total iterations: %d\n", iterations);
+    printf("Total expantion: %d\n", expantion);
+
+    elapsed_secs = double(finish - start) / CLOCKS_PER_SEC;
+    printf("Total time: %f\n seconds", elapsed_secs);
+
+    path.clear();
 }
 
-void BFS(Node *root, int capacity)
+void BFS(Node *root)
 {
     printf("IN BFS\n");
 
@@ -108,6 +120,7 @@ void BFS(Node *root, int capacity)
 
     Node *node;
     Node *temp;
+    //double elapsed_secs;
     //Node *answer;
 
     node = temp = 0;
@@ -120,14 +133,24 @@ void BFS(Node *root, int capacity)
 
     while(!Q.empty())
     {
+        finish = clock();
+        elapsed_secs = double(finish - start) / CLOCKS_PER_SEC;
+        if(elapsed_secs > 30.0)
+        {
+            printf("Time limit exceeded\n");
+            br = true;
+        }
+
         node = Q.front();
         Q.pop();
 
         //possible moves
         for(int i = 1; i <= maxCapacity; i++)
         {
-            for(int j = 0; j <= i; j++)
+            for(int j = 0; j <= i; j++) //number of missionaries
             {
+                if(i != 0 && (i-j) > i) continue;
+
                 if(node->dir) //from side1 to side2
                 {
                     temp = new Node(node->mis1-j, node->mis2+j, node->can1-(i-j), node->can2+(i-j), false, node);
@@ -137,6 +160,11 @@ void BFS(Node *root, int capacity)
                     {
                         Q.push(temp);
                         expanded.push_back(temp);
+                        if(expanded.size() > 99999)
+                        {
+                            printf("State expansion limit exceeded\n");
+                            br = true;
+                        }
 
                         if(temp->can1 == 0 && temp->mis1 == 0)
                         {
@@ -162,6 +190,11 @@ void BFS(Node *root, int capacity)
                     {
                         Q.push(temp);
                         expanded.push_back(temp);
+                        if(expanded.size() > 99999)
+                        {
+                            printf("State expansion limit exceeded\n");
+                            br = true;
+                        }
 
                         if(temp->can1 == 0 && temp->mis1 == 0)
                         {
@@ -203,18 +236,34 @@ void DFS(Node *node)
 
     if(answer != 0) return;
 
+    if(expanded.size() > 99999)
+    {
+        printf("State expansion limit exceeded\n");
+        exit(0);
+    }
+
+    finish = clock();
+    elapsed_secs = double(finish - start) / CLOCKS_PER_SEC;
+    if(elapsed_secs > 30.0)
+    {
+        printf("Time limit exceeded\n");
+        //br = true;
+        exit(0);
+    }
+
     expanded.push_back(node);
 
     for(int i = 1; i <= maxCapacity; i++)
     {
         for(int j = 0; j <= i; j++)
         {
+            if(i != 0 && (i-j) > i) continue;
+
             if(node->dir) //from side1 to side2
             {
                 temp = new Node(node->mis1-j, node->mis2+j, node->can1-(i-j), node->can2+(i-j), false, node);
 
-                if(temp->valid())
-                    DFS(temp);
+                if(temp->valid()) DFS(temp);
 
                 else
                 {
@@ -227,8 +276,7 @@ void DFS(Node *node)
             {
                 temp = new Node(node->mis1+j, node->mis2-j, node->can1+(i-j), node->can2-(i-j), true, node);
 
-                if(temp->valid())
-                    DFS(temp);
+                if(temp->valid()) DFS(temp);
 
                 else
                 {
@@ -271,12 +319,16 @@ int main ()
 
         if (choice == 1)
         {
-            BFS(root, maxCapacity);
+            start = clock();
+            BFS(root);
             print();
+           // cout << start << " " << finish << endl;
         }
 
         else if(choice == 2)
         {
+            start = clock();
+            printf("In DFS\n");
             DFS(root);
             print();
         }
