@@ -33,7 +33,7 @@ public:
             return true;
     }
 
-    void print()
+    void printNode()
     {
         printf("Side1 has %d missionaries and %d cannibals\n", mis1, can1);
         printf("Side2 has %d missionaries and %d cannibals\n", mis2, can2);
@@ -45,6 +45,7 @@ public:
 };
 
 vector <Node*> expanded;
+Node *answer;
 
 bool check(Node *node)
 {
@@ -62,19 +63,54 @@ bool check(Node *node)
     return true;
 }
 
+void print()
+{
+    vector <Node*> path;
+    Node *temp = answer;
+    if (answer == 0)
+    {
+        printf("No Solution\n");
+        return;
+    }
+
+    while(temp != NULL)
+    {
+        path.push_back(temp);
+        temp = temp->parent;
+    }
+
+    int iterations = path.size();
+    int expantion = expanded.size();
+
+    printf("Total iterations: %d\n", iterations);
+    printf("Total expantion: %d\n", expantion);
+
+    for(int i = iterations-1; i >= 0; i--)
+    {
+        if(path[i]->dir) //dir is true, that means boat is in side 1
+        {
+            printf("(%d, %d) >> (%d, %d)\n", path[i]->mis1, path[i]->can1, path[i]->mis2, path[i]->can2);
+        }
+        else //dir is true, that means boat is in side 2
+        {
+            printf("(%d, %d) << (%d, %d)\n", path[i]->mis1, path[i]->can1, path[i]->mis2, path[i]->can2);
+        }
+    }
+}
+
 void BFS(Node *root, int capacity)
 {
     printf("IN BFS\n");
 
     queue <Node*> Q;
 
-    vector<Node*> path;
+    //vector<Node*> path;
 
     Node *node;
     Node *temp;
-    Node *answer;
+    //Node *answer;
 
-    node = temp = answer = 0;
+    node = temp = 0;
 
     Q.push(root);
 
@@ -150,43 +186,58 @@ void BFS(Node *root, int capacity)
         if(br)
             break;
     }
+}
 
+void DFS(Node *node)
+{
+    Node *temp = 0;
+    bool validity = check(node);
 
-    temp = answer;
-    if (answer == 0)
+    if(!validity) return;
+
+    if(node->can1 == 0 && node->mis1 == 0)
     {
-        printf("No Solution\n");
+        answer = node;
         return;
     }
 
-    while(temp != NULL)
+    if(answer != 0) return;
+
+    expanded.push_back(node);
+
+    for(int i = 1; i <= maxCapacity; i++)
     {
-        path.push_back(temp);
-        temp = temp->parent;
-    }
-
-    int iterations = path.size();
-    int expantion = expanded.size();
-
-    printf("Total iterations: %d\n", iterations);
-    printf("Total expantion: %d\n", expantion);
-
-    for(int i = iterations-1; i >= 0; i--)
-    {
-        if(path[i]->dir) //dir is true, that means boat is in side 1
+        for(int j = 0; j <= i; j++)
         {
-            printf("(%d, %d) >> (%d, %d)\n", path[i]->mis1, path[i]->can1, path[i]->mis2, path[i]->can2);
-        }
-        else //dir is true, that means boat is in side 2
-        {
-            printf("(%d, %d) << (%d, %d)\n", path[i]->mis1, path[i]->can1, path[i]->mis2, path[i]->can2);
+            if(node->dir) //from side1 to side2
+            {
+                temp = new Node(node->mis1-j, node->mis2+j, node->can1-(i-j), node->can2+(i-j), false, node);
+
+                if(temp->valid())
+                    DFS(temp);
+
+                else
+                {
+                    delete temp;
+                    temp = 0;
+                }
+            }
+
+            else //from side 2 to side 1
+            {
+                temp = new Node(node->mis1+j, node->mis2-j, node->can1+(i-j), node->can2-(i-j), true, node);
+
+                if(temp->valid())
+                    DFS(temp);
+
+                else
+                {
+                    delete temp;
+                    temp = 0;
+                }
+            }
         }
     }
-}
-
-void DFS()
-{
-
 }
 
 int main ()
@@ -195,7 +246,7 @@ int main ()
 
     while (1)
     {
-        int mis, can, cap;
+        int mis, can, cap, choice;
         printf("Enter the number of  missionaries, cannibal and boat capacity respectively\n");
         scanf("%d%d%d", &mis, &can, &cap);
         if (mis <= 0 || can <= 0 || cap <= 0)
@@ -211,10 +262,24 @@ int main ()
         }
 
         maxCapacity = cap;
+        answer = 0;
 
         Node *root = new Node(mis, 0, can, 0, true, NULL);
 
-        BFS(root, maxCapacity);
+        printf("Enter 1 for BFS, 2 for DFS\n");
+        scanf("%d", &choice);
+
+        if (choice == 1)
+        {
+            BFS(root, maxCapacity);
+            print();
+        }
+
+        else if(choice == 2)
+        {
+            DFS(root);
+            print();
+        }
 
         expanded.clear();
     }
