@@ -80,6 +80,7 @@ void makeChild(Node *parent, Node *child)
 {
     child->parent = parent;
     child->boardSize = parent->boardSize;
+
     for(int i = 0; i < child->boardSize; i++)
     {
         //printf("check\n");
@@ -358,4 +359,3 @@ int main()
 
 	return 0;
 }
-
