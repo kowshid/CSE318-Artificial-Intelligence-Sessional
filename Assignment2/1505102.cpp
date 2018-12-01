@@ -512,36 +512,36 @@ int main()
 	//freopen("in.txt","r",stdin);
 	freopen("in2.txt","r",stdin);
 
+	expansion = 0;
+	explore = 0;
+	answer = 0;
+
 	int bSize, n;
 
-	printf("\nInput board size\n");
+	printf("\nInput board square size\n");
 	scanf("%d", &bSize);
 
 	sz = bSize;
 
-	int arr[bSize][bSize];
-
-	answer = 0;
-
-	Node *initial = new Node(bSize);
+	Node *initial = new Node(sz);
 
 	printf("\nEnter State\n");
 	initial->getNode();
-	initial->printNode();
+	//initial->printNode();
 
-	printf("hammingDistance = %d\n", hammingDistance(*initial));
-	printf("manhattanDistance = %d\n", manhattanDistance(*initial));
-	printf("linearConflict = %d\n", linearConflict(*initial));
+	printf("\nhammingDistance of initial = %d\n", hammingDistance(*initial));
+	printf("manhattanDistance of initial = %d\n", manhattanDistance(*initial));
+	printf("linearConflict of initial = %d\n", linearConflict(*initial));
 
 	if(initial->isGoal())
 	{
 		answer = initial;
-		answer->printNode();
+		//answer->printNode();
 		printf("This is goal\n");
 		return 0;
 	}
 
-	printf("\nEnter 1 for hammingDistance, 2 for manhattanDistance, 3 for linearConflict and manhattan\n");
+	printf("\nEnter\n1 for hammingDistance\n2 for manhattanDistance\n3 for linearConflict and manhattan\n");
 	scanf("%d", &n);
 	choice = n;
 
