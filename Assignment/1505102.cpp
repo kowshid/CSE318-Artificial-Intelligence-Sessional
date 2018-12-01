@@ -1,71 +1,252 @@
-#include <iostream>
-#include<queue>
-#include<vector>
-#include<stdio.h>
-#include <time.h>
-#include <ctime>
+#include<bits/stdc++.h>
 
 using namespace std;
 
-int maxCapacity;
-time_t start;
-time_t finish;
-double elapsed_secs;
+int sz;
 
 class Node
 {
 public:
-    int mis1, mis2;
-    int can1, can2;
-    bool dir; //true for side 1 to 2, false for side 2 to 1
-    Node *parent;
+    int fn, gn;
+	int boardSize;
+	int arr[5][5];
+	Node *parent;
 
-    Node(int a, int b, int c, int d, bool e, Node *p)
-    {
-        mis1 = a;
-        mis2 = b;
-        can1 = c;
-        can2 = d;
-        dir = e;
-        parent = p;
-    };
+	Node()
+	{
 
-    bool valid()
-    {
-        if ((can1 > mis1  &&  mis1 != 0) || (can2 > mis2  &&  mis2 != 0) || can1 < 0 || can2 < 0 || mis1 < 0 || mis2 < 0)
-            return false;
-        else
-            return true;
-    }
+	}
 
-    void printNode()
-    {
-        printf("Side1 has %d missionaries and %d cannibals\n", mis1, can1);
-        printf("Side2 has %d missionaries and %d cannibals\n", mis2, can2);
-        if(dir)
-            printf("Boat is in side 1 and will go to side 2 next\n");
-        else
-            printf("Boat is in side 2 and will go to side 1 next\n");
-    }
+	Node(int n)
+	{
+		boardSize = n;
+        parent = 0;
+
+		for(int i = 0; i < boardSize; i++)
+		{
+			for(int j = 0; j < boardSize; j++)
+			{
+				arr[i][j] = 0;
+			}
+		}
+	}
+
+	void getNode()
+	{
+		for(int i = 0; i < boardSize; i++)
+		{
+			for(int j = 0; j < boardSize; j++)
+			{
+				scanf("%d", &arr[i][j]);
+			}
+		}
+	}
+
+	void printNode()
+	{
+		for(int i = 0; i < boardSize; i++)
+		{
+			for(int j = 0; j < boardSize; j++)
+			{
+				printf("%d ", arr[i][j]);
+			}
+
+			printf("\n");
+		}
+	}
+
+	bool isGoal()
+	{
+		int count = 0;
+
+		if(arr[boardSize-1][boardSize-1] != 0) return false;
+
+		for(int i = 0; i < boardSize; i++)
+		{
+			for(int j = 0; j < boardSize; j++)
+			{
+				count++;
+
+				if(arr[i][j] != 0)
+				{
+					if(arr[i][j] != count) return false;
+				}
+			}
+		}
+
+		return true;
+	}
+	
+	bool isSolvable()
+	{
+		
+	}
 };
 
-vector <Node*> expanded;
+vector <Node *> closedList;
+
 Node *answer;
 
-bool check(Node *node)
+void makeChild(Node *parent, Node *child)
 {
-    if(node == 0) return false;
+    child->parent = parent;
+    child->boardSize = parent->boardSize;
 
-    for(int i = 0; i < expanded.size(); i++)
+    for(int i = 0; i < child->boardSize; i++)
     {
-        if(expanded[i]->can1 == node->can1 && expanded[i]->can2 == node->can2 && expanded[i]->mis1 == node->mis1 && expanded[i]->mis2 == node->mis2 && expanded[i]->dir == node->dir)
+        //printf("check\n");
+        for(int j = 0; j < child->boardSize; j++)
         {
-            return false;
+            child->arr[i][j] = parent->arr[i][j];
         }
     }
-
-    return true;
 }
+
+
+bool nodeCheck(Node *a, Node *b)
+{
+	for(int i = 0; i < sz; i++)
+	{
+		for(int j = 0; j < sz; j++)
+		{
+			if(a->arr[i][j] != b->arr[i][j]) return false;
+		}
+	}
+
+	return true;
+}
+
+bool check(Node *node) //false for unequal, true for equal
+{
+    //if(node == 0) return false;
+
+    for(int i = 0; i < closedList.size(); i++)
+    {
+		printf("\nmatch found\n");
+        if(nodeCheck(node, closedList[i])) return true; //node already exists
+    }
+
+    return false; //no match found; doesn't exist
+}
+
+int hammingDistance(Node node)
+{
+	int bSize = node.boardSize;
+	int count = 0;
+	int result = 0;
+
+	for (int i = 0; i < bSize; i++)
+	{
+		for (int j = 0; j < bSize; j++)
+		{
+			count++;
+
+			if(node.arr[i][j] != count  && node.arr[i][j] != 0) result++;
+		}
+	}
+
+	return result;
+}
+
+int manhattanDistance(Node node)
+{
+	int row, col;
+	int bSize = node.boardSize;
+	int count = 0;
+	int result = 0;
+
+	for (int i = 0; i < bSize; i++)
+	{
+		for (int j = 0; j < bSize; j++)
+		{
+			count++;
+
+			if(node.arr[i][j] != 0 && node.arr[i][j] != count)
+			{
+				row = (node.arr[i][j] - 1)/3;
+				col = (node.arr[i][j] - 1)%3;
+
+				result = result + abs(i - row) + abs(j - col);
+			}
+		}
+	}
+
+	return result;
+}
+
+int linearConflict(Node node)
+{
+	int row1, row2, col1, col2;
+	int bSize = node.boardSize;
+	int result = 0;
+
+	for (int i = 0; i < bSize; i++)
+	{
+		for (int j = 0; j < bSize - 1; j++)
+		{
+			row1 = (node.arr[i][j] - 1)/3;
+			col1 = (node.arr[i][j] - 1)%3;
+
+			if(node.arr[i][j] != 0 && row1 == i)
+			{
+				for(int k = (j+1); k < bSize; k++)
+				{
+					row2 = (node.arr[i][k] - 1)/3;
+					col2 = (node.arr[i][k] - 1)%3;
+
+					if(row1 == row2 && col1 > col2)
+					{
+                        result++;
+                        //printf("%d %d\n", node.arr[i][j], node.arr[i][k]);
+                    }
+				}
+			}
+		}
+	}
+
+
+	for(int i = 0; i < bSize; i++)
+	{
+		for (int j = 0; j < bSize - 1; j++)
+		{
+			row1 = (node.arr[j][i] - 1)/3;
+			col1 = (node.arr[j][i] - 1)%3;
+
+			if(node.arr[j][i] != 0 && col1 == i)
+			{
+				for(int k = (j+1); k < bSize; k++)
+				{
+					row2 = (node.arr[k][i] - 1)/3;
+					col2 = (node.arr[k][i] - 1)%3;
+
+					if(row1 > row2 && col1 == col2)
+					{
+                        result++;
+                        //printf("%d %d\n", node.arr[j][i], node.arr[k][i]);
+                    }
+				}
+			}
+		}
+	}
+
+	return result;
+}
+
+int heuristic(Node node, int a)
+{
+	if(a == 1) return hammingDistance(node);
+	if(a == 2) return manhattanDistance(node);
+	if(a == 3) return manhattanDistance(node) + 2*linearConflict(node);
+}
+
+class CMP
+{
+public:
+	bool operator()(const Node *a, const Node *b)
+	{
+		return a->fn > b->fn;
+	}
+};
 
 void print()
 {
@@ -77,264 +258,216 @@ void print()
         return;
     }
 
-    while(temp != NULL)
+    while(temp != 0)
     {
         path.push_back(temp);
         temp = temp->parent;
     }
 
     int iterations = path.size();
-    int expantion = expanded.size();
+    int expantion = closedList.size();
 
     //printf("Total iterations: %d\n", iterations);
     //printf("Total expantion: %d\n", expantion);
 
     for(int i = iterations-1; i >= 0; i--)
     {
-        if(path[i]->dir) //dir is true, that means boat is in side 1
-        {
-            printf("(%d, %d) >> (%d, %d)\n", path[i]->mis1, path[i]->can1, path[i]->mis2, path[i]->can2);
-        }
-        else //dir is true, that means boat is in side 2
-        {
-            printf("(%d, %d) << (%d, %d)\n", path[i]->mis1, path[i]->can1, path[i]->mis2, path[i]->can2);
-        }
+        path[i]->printNode();
+        printf("\n");
     }
 
-    printf("Total iterations: %d\n", iterations);
+    printf("Total iterations: %d\n", iterations-1);
     printf("Total expantion: %d\n", expantion);
-
-    elapsed_secs = double(finish - start) / CLOCKS_PER_SEC;
-    printf("Total time: %f\n seconds", elapsed_secs);
 
     path.clear();
 }
 
-void BFS(Node *root)
+void AStarSearch(Node *node, int a)
 {
-    printf("IN BFS\n");
+	priority_queue <Node *, vector<Node *>, CMP> openList;
 
-    queue <Node*> Q;
+    node->gn = 0;
+	node->parent = 0;
+	node->fn = heuristic(*node, a);
 
-    //vector<Node*> path;
+	openList.push(node);
+	closedList.push_back(node);
 
-    Node *node;
-    Node *temp;
-    //double elapsed_secs;
-    //Node *answer;
+	//int sz = node->boardSize;
 
-    node = temp = 0;
+	while(!openList.empty())
+	{
+        Node *temp = openList.top();
+        openList.pop();
 
-    Q.push(root);
+        //closedList.push_back(temp);
+        //if(temp->isGoal()) break;
 
-    //bool direction = root->dir;
-    bool validity;
-    bool br = false;
+        int zX, zY;
 
-    while(!Q.empty())
-    {
-        finish = clock();
-        elapsed_secs = double(finish - start) / CLOCKS_PER_SEC;
-        if(elapsed_secs > 30.0)
+        for(int i = 0; i < sz; i++)
         {
-            printf("Time limit exceeded\n");
-            br = true;
-        }
-
-        node = Q.front();
-        Q.pop();
-
-        //possible moves
-        for(int i = 1; i <= maxCapacity; i++)
-        {
-            for(int j = 0; j <= i; j++) //number of missionaries
+            for(int j = 0; j < sz; j++)
             {
-                if(i != 0 && (i-j) > i) continue;
-
-                if(node->dir) //from side1 to side2
+                if(temp->arr[i][j] == 0)
                 {
-                    temp = new Node(node->mis1-j, node->mis2+j, node->can1-(i-j), node->can2+(i-j), false, node);
-                    validity = temp->valid()  && check(temp);
-
-                    if(validity)
-                    {
-                        Q.push(temp);
-                        expanded.push_back(temp);
-                        if(expanded.size() > 99999)
-                        {
-                            printf("State expansion limit exceeded\n");
-                            br = true;
-                        }
-
-                        if(temp->can1 == 0 && temp->mis1 == 0)
-                        {
-                            answer = temp;
-                            br = true;
-                            break;
-                        }
-                    }
-
-                    else
-                    {
-                        delete temp;
-                        temp = 0;
-                    }
-                }
-
-                else //from side 2 to side 1
-                {
-                    temp = new Node(node->mis1+j, node->mis2-j, node->can1+(i-j), node->can2-(i-j), true, node);
-                    validity = temp->valid() && check(temp);
-
-                    if(validity)
-                    {
-                        Q.push(temp);
-                        expanded.push_back(temp);
-                        if(expanded.size() > 99999)
-                        {
-                            printf("State expansion limit exceeded\n");
-                            br = true;
-                        }
-
-                        if(temp->can1 == 0 && temp->mis1 == 0)
-                        {
-                            answer = temp;
-                            br = true;
-                            break;
-                        }
-                    }
-
-                    else
-                    {
-                        delete temp;
-                        temp = 0;
-                    }
+                    zX = i;
+                    zY = j;
                 }
             }
-
-            if(br)
-                break;
         }
 
-        if(br)
-            break;
-    }
+        if(zX > 0) //up move possible
+        {
+            Node *child = new Node(sz);
+            makeChild(temp, child);
+
+            swap(child->arr[zX][zY], child->arr[zX-1][zY]);
+            //child->printNode();
+
+            child->gn = temp->gn + 1;
+            child->fn = temp->gn + heuristic(*child, a);
+
+            if(!check(child))
+            {
+				closedList.push_back(child);
+
+				if(child->isGoal())
+				{
+					answer = child;
+					break;
+				}
+
+				else
+				{
+					openList.push(child);
+                }
+
+                //child->printNode();
+            }
+        }
+
+        if(zX < (sz - 1)) //down move possible
+        {
+            Node *child = new Node(sz);
+            makeChild(temp, child);
+
+            swap(child->arr[zX][zY], child->arr[zX+1][zY]);
+            //child->printNode();
+
+            child->gn = temp->gn + 1;
+            child->fn = temp->gn + heuristic(*child, a);
+
+            if(!check(child))
+            {
+                if(child->isGoal())
+				{
+					answer = child;
+					break;
+				}
+
+				else
+				{
+					openList.push(child);
+                }
+            }
+        }
+
+        if(zY < (sz - 1)) //right move possible
+        {
+            Node *child = new Node(sz);
+            makeChild(temp, child);
+
+            swap(child->arr[zX][zY], child->arr[zX][zY+1]);
+            //child->printNode();
+
+            child->gn = temp->gn + 1;
+            child->fn = temp->gn + heuristic(*child, a);
+
+            if(!check(child))
+            {
+                if(child->isGoal())
+				{
+					answer = child;
+					break;
+				}
+
+				else
+				{
+					openList.push(child);
+                }
+            }
+        }
+
+        if(zY > 0) //left move possible
+        {
+            Node *child = new Node(sz);
+            makeChild(temp, child);
+
+            swap(child->arr[zX][zY], child->arr[zX][zY-1]);
+            //child->printNode();
+
+            child->gn = temp->gn + 1;
+            child->fn = temp->gn + heuristic(*child, a);
+
+            if(!check(child))
+            {
+               if(child->isGoal())
+				{
+					answer = child;
+					break;
+				}
+
+				else
+				{
+					openList.push(child);
+                }
+            }
+        }
+	}
+
+	print();
 }
 
-void DFS(Node *node)
+int main()
 {
-    Node *temp = 0;
-    bool validity = check(node);
+	//freopen("in.txt","r",stdin);
+	freopen("in2.txt","r",stdin);
 
-    if(!validity) return;
+	int bSize, n;
 
-    if(node->can1 == 0 && node->mis1 == 0)
-    {
-        answer = node;
-        return;
-    }
+	printf("\nInput board size\n");
+	scanf("%d", &bSize);
 
-    if(answer != 0) return;
+	sz = bSize;
 
-    if(expanded.size() > 99999)
-    {
-        printf("State expansion limit exceeded\n");
-        exit(0);
-    }
+	int arr[bSize][bSize];
 
-    finish = clock();
-    elapsed_secs = double(finish - start) / CLOCKS_PER_SEC;
-    if(elapsed_secs > 30.0)
-    {
-        printf("Time limit exceeded\n");
-        //br = true;
-        exit(0);
-    }
+	answer = 0;
 
-    expanded.push_back(node);
+	Node *initial = new Node(bSize);
 
-    for(int i = 1; i <= maxCapacity; i++)
-    {
-        for(int j = 0; j <= i; j++)
-        {
-            if(i != 0 && (i-j) > i) continue;
+	printf("\nEnter State\n");
+	initial->getNode();
+	initial->printNode();
 
-            if(node->dir) //from side1 to side2
-            {
-                temp = new Node(node->mis1-j, node->mis2+j, node->can1-(i-j), node->can2+(i-j), false, node);
+	printf("hammingDistance = %d\n", hammingDistance(*initial));
+	printf("manhattanDistance = %d\n", manhattanDistance(*initial));
+	printf("linearConflict = %d\n", linearConflict(*initial));
 
-                if(temp->valid()) DFS(temp);
+	if(initial->isGoal())
+	{
+		answer = initial;
+		answer->printNode();
+		printf("This is goal\n");
+		return 0;
+	}
 
-                else
-                {
-                    delete temp;
-                    temp = 0;
-                }
-            }
+	printf("\nEnter 1 for hammingDistance, 2 for manhattanDistance, 3 for linearConflict and manhattan\n");
+	scanf("%d", &n);
+	printf("\nEntering AStar\n");
 
-            else //from side 2 to side 1
-            {
-                temp = new Node(node->mis1+j, node->mis2-j, node->can1+(i-j), node->can2-(i-j), true, node);
+    AStarSearch(initial, n);
 
-                if(temp->valid()) DFS(temp);
-
-                else
-                {
-                    delete temp;
-                    temp = 0;
-                }
-            }
-        }
-    }
-}
-
-int main ()
-{
-    //freopen("in.txt","r",stdin);
-
-    while (1)
-    {
-        int mis, can, cap, choice;
-        printf("Enter the number of  missionaries, cannibal and boat capacity respectively\n");
-        scanf("%d%d%d", &mis, &can, &cap);
-        if (mis <= 0 || can <= 0 || cap <= 0)
-        {
-            printf("Input error\n");
-            return 0;
-        }
-
-        if(can > mis)
-        {
-            printf("No result\n");
-            return 0;
-        }
-
-        maxCapacity = cap;
-        answer = 0;
-
-        Node *root = new Node(mis, 0, can, 0, true, NULL);
-
-        printf("Enter 1 for BFS, 2 for DFS\n");
-        scanf("%d", &choice);
-
-        if (choice == 1)
-        {
-            start = clock();
-            BFS(root);
-            print();
-           // cout << start << " " << finish << endl;
-        }
-
-        else if(choice == 2)
-        {
-            start = clock();
-            printf("In DFS\n");
-            DFS(root);
-            print();
-        }
-
-        expanded.clear();
-    }
-
-    return 0;
+	return 0;
 }
