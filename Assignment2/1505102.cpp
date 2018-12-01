@@ -2,7 +2,7 @@
 
 using namespace std;
 
-int sz;
+int sz, choice, explore, expansion;
 
 class Node
 {
@@ -76,7 +76,88 @@ public:
 
 		return true;
 	}
+
+	bool isSolvable()
+	{
+		int n = boardSize*boardSize;
+		int count = 0, inversion = 0;
+		int ar[n];
+
+		for(int i = 0; i < boardSize; i++)
+		{
+			for(int j = 0; j < boardSize; j++)
+			{
+				ar[count++] = arr[i][j];
+			}
+		}
+
+		for(int i = 0; i < n; i++)
+		{
+			printf("%d ", ar[i]);
+		}
+
+		printf("\n");
+
+		for(int i = 0; i < n-1; i++)
+		{
+			for(int j = i+1; j < n; j++)
+			{
+				if(ar[i] > ar[j] && (ar[j] != 0)) inversion++;
+			}
+		}
+
+		printf("inversion count: %d\n", inversion);
+
+		if(boardSize%2 == 1)
+		{
+			printf("Boardsize odd\n");
+			if(inversion%2 == 1)
+			{
+				printf("\nNO RESULT\n");
+				return false;
+			}
+			else
+			{
+				printf("\nResult Available\n");
+				return true;
+			}
+		}
+
+		if(boardSize%2 == 0)
+		{
+			printf("Boardsize even\n");
+			int zX;
+
+			for(int i = 0; i < boardSize; i++)
+			{
+				for(int j = 0; j < boardSize; j++)
+				{
+					if(arr[i][j] == 0)
+					{
+						zX = i;
+					}
+				}
+			}
+
+			printf("Zero is in %dth row\n", zX);
+
+			if((inversion+zX)%2 == 0)
+			{
+				printf("\nNO RESULT\n");
+				return false;
+			}
+			else
+			{
+				printf("\nResult Available\n");
+				return true;
+			}
+		}
+	}
 };
+
+vector <Node *> closedList;
+
+Node *answer;
 
 void makeChild(Node *parent, Node *child)
 {
@@ -93,8 +174,6 @@ void makeChild(Node *parent, Node *child)
     }
 }
 
-vector <Node *> closedList;
-Node *result = new Node(sz);
 
 bool nodeCheck(Node *a, Node *b)
 {
@@ -115,6 +194,7 @@ bool check(Node *node) //false for unequal, true for equal
 
     for(int i = 0; i < closedList.size(); i++)
     {
+		//printf("\nmatch found\n");
         if(nodeCheck(node, closedList[i])) return true; //node already exists
     }
 
@@ -189,7 +269,7 @@ int linearConflict(Node node)
 					if(row1 == row2 && col1 > col2)
 					{
                         result++;
-                        printf("%d %d\n", node.arr[i][j], node.arr[i][k]);
+                        //printf("%d %d\n", node.arr[i][j], node.arr[i][k]);
                     }
 				}
 			}
@@ -214,7 +294,7 @@ int linearConflict(Node node)
 					if(row1 > row2 && col1 == col2)
 					{
                         result++;
-                        printf("%d %d\n", node.arr[j][i], node.arr[k][i]);
+                        //printf("%d %d\n", node.arr[j][i], node.arr[k][i]);
                     }
 				}
 			}
@@ -240,24 +320,65 @@ public:
 	}
 };
 
-void AStarSearch(Node *node)
+void print()
 {
+    vector <Node*> path;
+    Node *temp = answer;
+    if (answer == 0)
+    {
+        printf("No Solution\n");
+        return;
+    }
 
+    while(temp != 0)
+    {
+        path.push_back(temp);
+        temp = temp->parent;
+    }
+
+    int iterations = path.size();
+    explore = closedList.size();
+
+    //printf("Total iterations: %d\n", iterations);
+    //printf("Total expantion: %d\n", expantion);
+
+    for(int i = iterations-1; i >= 0; i--)
+    {
+        path[i]->printNode();
+        printf("\n");
+    }
+
+	printf("\nTotal iterations: %d\n", iterations);
+    printf("Total explored: %d\n", explore);
+    printf("Total expantion: %d\n", expansion);
+
+    if(choice == 1) printf("\nUsed Hamming Distance\n");
+	if(choice == 2) printf("\nUsed Manhattan Distance\n");
+	if(choice == 3) printf("\nUsed Manhattan Distance + 2*linearConflict\n");
+
+    path.clear();
+}
+
+void AStarSearch(Node *node, int a)
+{
 	priority_queue <Node *, vector<Node *>, CMP> openList;
 
     node->gn = 0;
+	node->parent = 0;
+	node->fn = heuristic(*node, a);
 
 	openList.push(node);
+	closedList.push_back(node);
 
 	//int sz = node->boardSize;
 
 	while(!openList.empty())
 	{
+		expansion++;
         Node *temp = openList.top();
         openList.pop();
 
         //closedList.push_back(temp);
-
         //if(temp->isGoal()) break;
 
         int zX, zY;
@@ -278,10 +399,12 @@ void AStarSearch(Node *node)
         {
             Node *child = new Node(sz);
             makeChild(temp, child);
+
             swap(child->arr[zX][zY], child->arr[zX-1][zY]);
             //child->printNode();
+
             child->gn = temp->gn + 1;
-            child->fn = temp->gn + heuristic(*child,1);
+            child->fn = temp->gn + heuristic(*child, a);
 
             if(!check(child))
             {
@@ -289,7 +412,7 @@ void AStarSearch(Node *node)
 
 				if(child->isGoal())
 				{
-					result = child;
+					answer = child;
 					break;
 				}
 
@@ -297,6 +420,8 @@ void AStarSearch(Node *node)
 				{
 					openList.push(child);
                 }
+
+                //child->printNode();
             }
         }
 
@@ -304,16 +429,18 @@ void AStarSearch(Node *node)
         {
             Node *child = new Node(sz);
             makeChild(temp, child);
+
             swap(child->arr[zX][zY], child->arr[zX+1][zY]);
             //child->printNode();
+
             child->gn = temp->gn + 1;
-            child->fn = temp->gn + heuristic(*child,1);
+            child->fn = temp->gn + heuristic(*child, a);
 
             if(!check(child))
             {
                 if(child->isGoal())
 				{
-					result = child;
+					answer = child;
 					break;
 				}
 
@@ -328,16 +455,18 @@ void AStarSearch(Node *node)
         {
             Node *child = new Node(sz);
             makeChild(temp, child);
+
             swap(child->arr[zX][zY], child->arr[zX][zY+1]);
             //child->printNode();
+
             child->gn = temp->gn + 1;
-            child->fn = temp->gn + heuristic(*child,1);
+            child->fn = temp->gn + heuristic(*child, a);
 
             if(!check(child))
             {
                 if(child->isGoal())
 				{
-					result = child;
+					answer = child;
 					break;
 				}
 
@@ -352,16 +481,18 @@ void AStarSearch(Node *node)
         {
             Node *child = new Node(sz);
             makeChild(temp, child);
+
             swap(child->arr[zX][zY], child->arr[zX][zY-1]);
             //child->printNode();
+
             child->gn = temp->gn + 1;
-            child->fn = temp->gn + heuristic(*child,1);
+            child->fn = temp->gn + heuristic(*child, a);
 
             if(!check(child))
             {
                if(child->isGoal())
 				{
-					result = child;
+					answer = child;
 					break;
 				}
 
@@ -372,27 +503,30 @@ void AStarSearch(Node *node)
             }
         }
 	}
+
+	print();
 }
 
 int main()
 {
-	freopen("in.txt","r",stdin);
+	//freopen("in.txt","r",stdin);
+	freopen("in2.txt","r",stdin);
 
 	int bSize, n;
 
-	//printf("\nInput board size\n");
+	printf("\nInput board size\n");
 	scanf("%d", &bSize);
 
 	sz = bSize;
 
 	int arr[bSize][bSize];
 
+	answer = 0;
+
 	Node *initial = new Node(bSize);
-	initial->fn = heuristic(*initial, 1);
 
-	//printf("\nEnter State\n");
+	printf("\nEnter State\n");
 	initial->getNode();
-
 	initial->printNode();
 
 	printf("hammingDistance = %d\n", hammingDistance(*initial));
@@ -401,11 +535,21 @@ int main()
 
 	if(initial->isGoal())
 	{
+		answer = initial;
+		answer->printNode();
 		printf("This is goal\n");
 		return 0;
 	}
 
-    AStarSearch(initial);
+	printf("\nEnter 1 for hammingDistance, 2 for manhattanDistance, 3 for linearConflict and manhattan\n");
+	scanf("%d", &n);
+	choice = n;
 
+	if(initial->isSolvable())
+	{
+		printf("\nEntering AStar\n");
+
+		AStarSearch(initial, choice);
+	}
 	return 0;
 }
