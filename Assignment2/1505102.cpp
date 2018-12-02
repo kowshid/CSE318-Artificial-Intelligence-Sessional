@@ -255,8 +255,8 @@ int manhattanDistance(Node node)
 
             if(node.arr[i][j] != 0 && node.arr[i][j] != count)
             {
-                row = (node.arr[i][j] - 1)/3;
-                col = (node.arr[i][j] - 1)%3;
+                row = (node.arr[i][j] - 1)/sz;
+                col = (node.arr[i][j] - 1)%sz;
 
                 result = result + abs(i - row) + abs(j - col);
             }
