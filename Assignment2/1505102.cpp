@@ -213,7 +213,6 @@ bool checkExplore(Node *node) //false for unequal, true for equal
 
     for(int i = 0; i < explored.size(); i++)
     {
-        //printf("\nmatch found\n");
         if(nodeCheck(node, explored[i]))
             return true; //node already exists
     }
@@ -272,20 +271,21 @@ int linearConflict(Node node)
     int row1, row2, col1, col2;
     int bSize = node.boardSize;
     int result = 0;
+    //int a = sz;
 
     for (int i = 0; i < bSize; i++)
     {
         for (int j = 0; j < bSize - 1; j++)
         {
-            row1 = (node.arr[i][j] - 1)/3;
-            col1 = (node.arr[i][j] - 1)%3;
+            row1 = (node.arr[i][j] - 1)/sz;
+            col1 = (node.arr[i][j] - 1)%sz;
 
             if(node.arr[i][j] != 0 && row1 == i)
             {
                 for(int k = (j+1); k < bSize; k++)
                 {
-                    row2 = (node.arr[i][k] - 1)/3;
-                    col2 = (node.arr[i][k] - 1)%3;
+                    row2 = (node.arr[i][k] - 1)/sz;
+                    col2 = (node.arr[i][k] - 1)%sz;
 
                     if(row1 == row2 && col1 > col2)
                     {
@@ -302,15 +302,15 @@ int linearConflict(Node node)
     {
         for (int j = 0; j < bSize - 1; j++)
         {
-            row1 = (node.arr[j][i] - 1)/3;
-            col1 = (node.arr[j][i] - 1)%3;
+            row1 = (node.arr[j][i] - 1)/sz;
+            col1 = (node.arr[j][i] - 1)%sz;
 
             if(node.arr[j][i] != 0 && col1 == i)
             {
                 for(int k = (j+1); k < bSize; k++)
                 {
-                    row2 = (node.arr[k][i] - 1)/3;
-                    col2 = (node.arr[k][i] - 1)%3;
+                    row2 = (node.arr[k][i] - 1)/sz;
+                    col2 = (node.arr[k][i] - 1)%sz;
 
                     if(row1 > row2 && col1 == col2)
                     {
