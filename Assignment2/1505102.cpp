@@ -95,7 +95,7 @@ public:
 
         for(int i = 0; i < n; i++)
         {
-            printf("%d ", ar[i]);
+            //printf("%d ", ar[i]);
         }
 
         printf("\n");
@@ -109,7 +109,7 @@ public:
             }
         }
 
-        printf("inversion count: %d\n", inversion);
+        printf("Inversion count: %d\n", inversion);
 
         if(boardSize%2 == 1)
         {
@@ -367,8 +367,8 @@ void print()
 
     for(int i = iterations-1; i >= 0; i--)
     {
-        path[i]->printNode();
-        printf("\n");
+//        path[i]->printNode();
+//        printf("\n");
     }
 
     printf("\nTotal iterations: %d\n", iterations);
@@ -399,7 +399,7 @@ void AStarSearch(Node *node, int a)
 
     while(!openList.empty())
     {
-        expansion++;
+        //expansion++;
         Node *temp = openList.top();
         openList.pop();
         closedList.push_back(temp);
@@ -433,8 +433,6 @@ void AStarSearch(Node *node, int a)
 
             if(!check(child))
             {
-                //List.push_back(child);
-
                 if(child->isGoal())
                 {
                     answer = child;
@@ -546,20 +544,20 @@ int main()
 
     freopen("in.txt","r",stdin);
 
-    printf("\nInput board square size\n");
+    //printf("\nInput board square size\n");
     scanf("%d", &bSize);
 
     sz = bSize;
 
     Node *initial = new Node(sz);
 
-    printf("\nEnter State\n");
+    //printf("\nEnter State\n");
     initial->getNode();
-    //initial->printNode();
+    initial->printNode();
 
-    printf("\nhammingDistance of initial = %d\n", hammingDistance(*initial));
-    printf("manhattanDistance of initial = %d\n", manhattanDistance(*initial));
-    printf("linearConflict of initial = %d\n", linearConflict(*initial));
+    printf("\nHammingDistance of initial = %d\n", hammingDistance(*initial));
+    printf("ManhattanDistance of initial = %d\n", manhattanDistance(*initial));
+    printf("LinearConflict of initial = %d\n", linearConflict(*initial));
 
     if(initial->isGoal())
     {
@@ -569,18 +567,25 @@ int main()
         return 0;
     }
 
-    printf("\nEnter\n1 for hammingDistance\n2 for manhattanDistance\n3 for linearConflict and manhattan\n");
-    scanf("%d", &n);
-    choice = n;
+//    printf("\nEnter\n1 for hammingDistance\n2 for manhattanDistance\n3 for linearConflict and manhattan\n");
+//    scanf("%d", &n);
+//    choice = n;
 
     if(initial->isSolvable())
     {
         printf("\nEntering AStar\n");
 
-        AStarSearch(initial, choice);
+//        AStarSearch(initial, choice);
+        for(int i = 1; i < 4; i++)
+        {
+            choice = i;
+            AStarSearch(initial, choice);
+            closedList.clear();
+            explored.clear();
+        }
     }
 
-    closedList.clear();
-    explored.clear();
+    //closedList.clear();
+    //explored.clear();
     return 0;
 }
