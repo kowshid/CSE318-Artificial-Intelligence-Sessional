@@ -67,12 +67,8 @@ public:
             for(int j = 0; j < boardSize; j++)
             {
                 count++;
-
-                if(arr[i][j] != 0)
-                {
-                    if(arr[i][j] != count)
-                        return false;
-                }
+                if(arr[i][j] != 0 && arr[i][j] != count)
+                    return false;
             }
         }
 
@@ -93,12 +89,12 @@ public:
             }
         }
 
-        for(int i = 0; i < n; i++)
-        {
-            //printf("%d ", ar[i]);
-        }
-
-        printf("\n");
+//        for(int i = 0; i < n; i++)
+//        {
+//            printf("%d ", ar[i]);
+//        }
+//
+//        printf("\n");
 
         for(int i = 0; i < n-1; i++)
         {
@@ -109,14 +105,15 @@ public:
             }
         }
 
-        printf("Inversion count: %d\n", inversion);
+        printf("\nInversion count: %d\n", inversion);
 
         if(boardSize%2 == 1)
         {
             printf("Boardsize odd\n");
+
             if(inversion%2 == 1)
             {
-                printf("\nNO RESULT\n");
+                printf("\nNOT SOLVABLE\n");
                 return false;
             }
             else
@@ -146,7 +143,7 @@ public:
 
             if((inversion+zX)%2 == 0)
             {
-                printf("\nNO RESULT\n");
+                printf("\nNOT SOLVABLE\n");
                 return false;
             }
             else
@@ -177,7 +174,6 @@ void makeChild(Node *parent, Node *child)
         }
     }
 }
-
 
 bool nodeCheck(Node *a, Node *b)
 {
@@ -231,7 +227,6 @@ int hammingDistance(Node node)
         for (int j = 0; j < bSize; j++)
         {
             count++;
-
             if(node.arr[i][j] != count  && node.arr[i][j] != 0)
                 result++;
         }
@@ -365,11 +360,11 @@ void print()
     expansion = closedList.size();
     explore = explored.size();
 
-    for(int i = iterations-1; i >= 0; i--)
-    {
+//    for(int i = iterations-1; i >= 0; i--)
+//    {
 //        path[i]->printNode();
 //        printf("\n");
-    }
+//    }
 
     printf("\nTotal iterations: %d\n", iterations);
     printf("Total explored: %d\n", explore);
@@ -579,6 +574,7 @@ int main()
         for(int i = 1; i < 4; i++)
         {
             choice = i;
+            printf("\nSolve %d\n", i);
             AStarSearch(initial, choice);
             closedList.clear();
             explored.clear();
