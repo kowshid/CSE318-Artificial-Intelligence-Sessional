@@ -21,6 +21,14 @@ void GetMap()
     }
 }
 
+void PrintMap()
+{
+    for(int i = 0; i < sz; i++)
+    {
+        printf("\n%d %d", cityList[i].first, cityList[i].second);
+    }
+}
+
 int GetDistance(pr a, pr b)
 {
      int dist, xDist, yDist;
@@ -73,7 +81,7 @@ void PrintPath()
         cout<<path[i]+1<<"-->";
     }
 
-    //cout<<path[path.size()-1]+1<<endl;
+    cout << endl;
 }
 
 void NearestNeighbour(int root)
@@ -256,12 +264,48 @@ void CheapestInsertion(int root)
     PrintPath();
 }
 
-void PrintMap()
+void Opt2 (int root)
 {
-    for(int i = 0; i < sz; i++)
+    NearestNeighbour(root);
+    //NearestInsertion(root);
+
+    float dist = PathDistance();
+    float distNew;
+    bool flag;
+    int i = 1;
+
+    while(true)
     {
-        printf("\n%d %d", cityList[i].first, cityList[i].second);
+        flag = false;
+
+        for(int i = 1; i < path.size()-2; i++)
+        {
+            for(int j = i+1; j < path.size()-1; j++)
+            {
+                reverse(path.begin()+i, path.begin()+j);
+                distNew = PathDistance();
+
+                if(distNew < dist)
+                {
+                    dist = distNew;
+                    flag = true;
+                    break;
+                }
+
+                else
+                {
+                    reverse(path.begin()+i, path.begin()+j);
+                }
+            }
+
+            if(flag) break;
+        }
+
+        if(!flag) break;
     }
+
+    cout << PathDistance() << endl;
+    PrintPath();
 }
 
 int main()
@@ -278,8 +322,9 @@ int main()
     GetMap();
     //PrintMap();
     //NearestNeighbour(0);
-    NearestInsertion(0);
-    CheapestInsertion(0);
+    //NearestInsertion(0);
+    //CheapestInsertion(0);
+    Opt2(0);
 
     return 0;
 }
