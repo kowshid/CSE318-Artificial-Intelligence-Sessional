@@ -92,7 +92,49 @@ int GetNearestNeighbour(int root)
     return result;
 }
 
-void NearestNeighbour(int root)
+int GetNearestNeighbourRandom(int root)
+{
+    double dist[5] = {INF, INF, INF, INF, INF}, n;
+    int result[5], j = 0, idx, high = 0, random;
+
+    for(int i = 0; i < sz; i++)
+    {
+        if(visited[i]) continue;
+
+        n = GetDistance(cityList[root], cityList[i]);
+        //printf("\n%d", n);
+        if(j < 5)
+        {
+            result[j] = i;
+            dist[j] = n;
+            j++;
+        }
+
+        else
+        {
+            for(int k = 0; k < 5; k++)
+            {
+                if(high < dist[k])
+                {
+                    idx = k;
+                    high = dist[k];
+                }
+            }
+
+            if(n < dist[idx] && n != 0)
+            {
+                result[idx] = i;
+                dist[idx] = n;
+            }
+        }
+    }
+
+    random = rand()%j;
+    cost = dist[random];
+    return result[random];
+}
+
+void NearestNeighbour(int root, int a)
 {
     fill(visited.begin(), visited.end(), false);
     path.clear();
@@ -103,13 +145,29 @@ void NearestNeighbour(int root)
     path.push_back(root);
     visited[root] = true;
 
-    while(n < sz)
+    if(a == 1) //greedy_simple
     {
-        t = GetNearestNeighbour(t);
-        path.push_back(t);
-        visited[t] = true;
+        while(n < sz)
+        {
+            t = GetNearestNeighbour(t);
+            path.push_back(t);
+            visited[t] = true;
 
-        n++;
+            n++;
+        }
+    }
+
+    if(a == 2) //greedy_randomized
+    {
+        //cout << "Check inside randomized" << endl;
+        while(n < sz)
+        {
+            t = GetNearestNeighbourRandom(t);
+            path.push_back(t);
+            visited[t] = true;
+
+            n++;
+        }
     }
 
     path.push_back(root);
@@ -230,7 +288,7 @@ void Savings(int root)
 
 void Opt2 (int root)
 {
-    NearestNeighbour(root);
+    NearestNeighbour(root, 1);
     //NearestInsertion(root);
 
     float dist = PathDistance();
@@ -280,8 +338,9 @@ void task1()
     {
         random = rand()%sz;
 
-        NearestNeighbour(random);
+        NearestNeighbour(random, 1);
         costTableNN[random] = PathDistance();
+
         if(PathDistance() < bestNN)
         {
             bestNN = PathDistance();
@@ -294,24 +353,68 @@ void task1()
             worstNNidx = random;
         }
 
-        Savings(random);
-        costTableS[random] = PathDistance();
-        if(PathDistance() < bestS)
-        {
-            bestS = PathDistance();
-            bestSidx = random;
-        }
-        if(PathDistance() > worstS)
-        {
-            worstS = PathDistance();
-            worstSidx = random;
-        }
+//        Savings(random);
+//        costTableS[random] = PathDistance();
+//        if(PathDistance() < bestS)
+//        {
+//            bestS = PathDistance();
+//            bestSidx = random;
+//        }
+//        if(PathDistance() > worstS)
+//        {
+//            worstS = PathDistance();
+//            worstSidx = random;
+//        }
     }
 
     cout << endl << "Best cost using NearestNeighbour heuristics: " << costTableNN[bestNNidx] << endl;
     cout << "Worst cost using NearestNeighbour heuristics: " << costTableNN[worstNNidx] << endl;
-    cout << endl << "Best cost using Savings heuristics: " << costTableS[bestSidx] << endl;
-    cout << "Worst cost using Savings heuristics: " << costTableS[worstSidx] << endl;
+//    cout << endl << "Best cost using Savings heuristics: " << costTableS[bestSidx] << endl;
+//    cout << "Worst cost using Savings heuristics: " << costTableS[worstSidx] << endl;
+}
+
+void task2()
+{
+    //int random;
+
+    for(int i = 0; i < 10; i++)
+    {
+        //random = rand()%sz;
+
+        NearestNeighbour(bestNNidx, 2);
+
+        costTableNN[bestNNidx] = PathDistance();
+
+        if(PathDistance() < bestNN)
+        {
+            bestNN = PathDistance();
+            //bestNNidx = random;
+        }
+
+        if(PathDistance() > worstNN)
+        {
+            worstNN = PathDistance();
+            //worstNNidx = random;
+        }
+
+//        Savings(random);
+//        costTableS[random] = PathDistance();
+//        if(PathDistance() < bestS)
+//        {
+//            bestS = PathDistance();
+//            bestSidx = random;
+//        }
+//        if(PathDistance() > worstS)
+//        {
+//            worstS = PathDistance();
+//            worstSidx = random;
+//        }
+    }
+
+    cout << endl << "Best cost using NearestNeighbour (randomized) heuristics: " << bestNN << endl;
+    cout << "Worst cost using NearestNeighbour (randomized) heuristics: " << worstNN << endl;
+//    cout << endl << "Best cost using Savings heuristics: " << costTableS[bestSidx] << endl;
+//    cout << "Worst cost using Savings heuristics: " << costTableS[worstSidx] << endl;
 }
 
 int main()
@@ -331,6 +434,7 @@ int main()
     GetMap();
 
     task1();
+    task2();
 
     return 0;
 }
