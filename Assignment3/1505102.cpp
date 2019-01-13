@@ -1,14 +1,18 @@
 #include<bits/stdc++.h>
 
 #define pr pair<double,double>
-#define INF 999999
+#define INF 999999.9
 using namespace std;
 
 int sz;
+int bestNNidx, worstNNidx, bestSidx, worstSidx;
+double bestNN, worstNN, bestS, worstS;
 double cost;
 vector <pr> cityList;
 vector <int> path;
 vector <bool> visited;
+vector <double> costTableNN;
+vector <double> costTableS;
 
 void GetMap()
 {
@@ -43,28 +47,6 @@ double GetDistance(pr a, pr b)
      return dist;
 }
 
-int GetNearestNeighbour(int root)
-{
-    double dist = INF, result = INF, n;
-
-    for(int i = 0; i < sz; i++)
-    {
-        if(visited[i]) continue;
-
-        n = GetDistance(cityList[root], cityList[i]);
-        //printf("\n%d", n);
-
-        if(n < dist && n != 0)
-        {
-            dist = n;
-            result = i;
-        }
-    }
-
-    cost = dist;
-    return result;
-}
-
 double PathDistance()
 {
     double result = 0.0;
@@ -87,9 +69,32 @@ void PrintPath()
     cout << endl;
 }
 
+int GetNearestNeighbour(int root)
+{
+    double dist = INF, n;
+    int result = INF;
+
+    for(int i = 0; i < sz; i++)
+    {
+        if(visited[i]) continue;
+
+        n = GetDistance(cityList[root], cityList[i]);
+        //printf("\n%d", n);
+
+        if(n < dist && n != 0)
+        {
+            dist = n;
+            result = i;
+        }
+    }
+
+    cost = dist;
+    return result;
+}
+
 void NearestNeighbour(int root)
 {
-    fill(visited.begin(),visited.end(),false);
+    fill(visited.begin(), visited.end(), false);
     path.clear();
 
     int t = root;
@@ -115,7 +120,7 @@ void NearestNeighbour(int root)
 
 void Savings(int root)
 {
-    fill(visited.begin(),visited.end(),false);
+    fill(visited.begin(), visited.end(), false);
     path.clear();
 
 //    path.push_back(root);
@@ -241,7 +246,7 @@ void Opt2 (int root)
         {
             for(int j = i+1; j < path.size()-1; j++)
             {
-                reverse(path.begin()+i, path.begin()+j);
+                reverse(path.begin()+i, path.begin()+j+1);
                 distNew = PathDistance();
 
                 if(distNew < dist)
@@ -253,7 +258,7 @@ void Opt2 (int root)
 
                 else
                 {
-                    reverse(path.begin()+i, path.begin()+j);
+                    reverse(path.begin()+i, path.begin()+j+1);
                 }
             }
 
@@ -267,9 +272,52 @@ void Opt2 (int root)
     PrintPath();
 }
 
+void task1()
+{
+    int random;
+
+    for(int i = 0; i < 5; i++)
+    {
+        random = rand()%sz;
+
+        NearestNeighbour(random);
+        costTableNN[random] = PathDistance();
+        if(PathDistance() < bestNN)
+        {
+            bestNN = PathDistance();
+            bestNNidx = random;
+        }
+
+        if(PathDistance() > worstNN)
+        {
+            worstNN = PathDistance();
+            worstNNidx = random;
+        }
+
+        Savings(random);
+        costTableS[random] = PathDistance();
+        if(PathDistance() < bestS)
+        {
+            bestS = PathDistance();
+            bestSidx = random;
+        }
+        if(PathDistance() > worstS)
+        {
+            worstS = PathDistance();
+            worstSidx = random;
+        }
+    }
+
+    cout << endl << "Best cost using NearestNeighbour heuristics: " << costTableNN[bestNNidx] << endl;
+    cout << "Worst cost using NearestNeighbour heuristics: " << costTableNN[worstNNidx] << endl;
+    cout << endl << "Best cost using Savings heuristics: " << costTableS[bestSidx] << endl;
+    cout << "Worst cost using Savings heuristics: " << costTableS[worstSidx] << endl;
+}
+
 int main()
 {
-    int n, m;
+    srand(time(NULL));
+    bestS = INF, bestNN = INF, worstS = 0, worstNN = 0;
 
     freopen("burma14.tsp","r",stdin);
 
@@ -277,11 +325,12 @@ int main()
 
     visited.resize(sz);
     cityList.resize(sz);
+    costTableNN.resize(sz);
+    costTableS.resize(sz);
 
     GetMap();
 
-    Savings(0);
-    NearestNeighbour(0);
+    task1();
 
     return 0;
 }
