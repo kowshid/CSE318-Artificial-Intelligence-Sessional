@@ -38,7 +38,7 @@ double GetDistance(pr a, pr b)
      xDist = (a.first-b.first);
      yDist = (a.second-b.second);
 
-     dist = xDist*xDist + yDist*yDist;
+     dist = sqrt(1.0 * (xDist*xDist + yDist*yDist));
 
      return dist;
 }
@@ -71,7 +71,7 @@ double PathDistance()
 
     for(int i = 0; i < path.size()-1; i++)
     {
-        result += sqrt(1.0 * GetDistance(cityList[path[i]], cityList[path[i+1]]));
+        result += GetDistance(cityList[path[i]], cityList[path[i+1]]);
     }
 
     return result;
@@ -124,7 +124,7 @@ void Savings(int root)
     deque <int> pathInitial;
     double savingTable[sz][sz];
     int head, tail, matha, lej;
-    double highest = 0, highest1 = 0, highest2 = 0;
+    double highest = 0.0, highest1 = 0.0, highest2 = 0.0;
 
     for(int i = 0; i < sz; i++)
     {
@@ -214,10 +214,9 @@ void Savings(int root)
     pathInitial.push_back(root);
     pathInitial.push_front(root);
 
-    for(int i = 0; i <= sz; i++)
+    for(int i : pathInitial)
     {
-        path.push_back(pathInitial.front());
-        pathInitial.pop_front();
+        path.push_back(i);
     }
 
     cout << "Path distance for Savings heuristics: " << PathDistance() << endl << "Path: " << endl;
@@ -282,6 +281,7 @@ int main()
     GetMap();
 
     Savings(0);
+    NearestNeighbour(0);
 
     return 0;
 }
