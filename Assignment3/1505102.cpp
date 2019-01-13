@@ -1,10 +1,11 @@
 #include<bits/stdc++.h>
 
-#define pr pair<int,int>
+#define pr pair<double,double>
 #define INF 999999
 using namespace std;
 
-int sz, cost;
+int sz;
+double cost;
 vector <pr> cityList;
 vector <int> path;
 vector <bool> visited;
@@ -12,13 +13,15 @@ vector <bool> visited;
 void GetMap()
 {
     pr temp;
-    int x, y;
+    double x, y, a;
 
     for(int i = 0; i < sz; i++)
     {
-        scanf("%d %d", &x, &y);
+        cin >> a >> x >> y;
         cityList[i] = make_pair(x, y);
     }
+
+//    printf("Got Map\n");
 }
 
 void PrintMap()
@@ -29,9 +32,9 @@ void PrintMap()
     }
 }
 
-int GetDistance(pr a, pr b)
+double GetDistance(pr a, pr b)
 {
-     int dist, xDist, yDist;
+     double dist, xDist, yDist;
      xDist = (a.first-b.first);
      yDist = (a.second-b.second);
 
@@ -42,7 +45,7 @@ int GetDistance(pr a, pr b)
 
 int GetNearestNeighbour(int root)
 {
-    int dist = INF, result = INF, n;
+    double dist = INF, result = INF, n;
 
     for(int i = 0; i < sz; i++)
     {
@@ -62,9 +65,9 @@ int GetNearestNeighbour(int root)
     return result;
 }
 
-float PathDistance()
+double PathDistance()
 {
-    float result = 0;
+    double result = 0.0;
 
     for(int i = 0; i < path.size()-1; i++)
     {
@@ -106,161 +109,118 @@ void NearestNeighbour(int root)
 
     path.push_back(root);
 
-    cout << PathDistance() << endl;
+    cout << "Path distance for NearestNeighbour heuristics: " <<  PathDistance() << endl << "Path: " << endl;
     PrintPath();
 }
 
-int NextNodeNI()
+void Savings(int root)
 {
-    int dist = INF, result, temp;
-
-    for(int i = 0; i < sz; i++)
-    {
-        if(visited[i])
-        {
-            temp = GetNearestNeighbour(i);
-
-            if(cost < dist)
-            {
-                dist = cost;
-                result = temp;
-            }
-        }
-    }
-
-    return result;
-}
-
-void NearestInsertion(int root)
-{
-    int n = 3, next, dist = INF, distNew, idx;
-
     fill(visited.begin(),visited.end(),false);
     path.clear();
 
-    path.push_back(root);
+//    path.push_back(root);
     visited[root] = true;
 
-    next = GetNearestNeighbour(root);
-    path.push_back(next);
-    visited[next] = true;
+    deque <int> pathInitial;
+    double savingTable[sz][sz];
+    int head, tail, matha, lej;
+    double highest = 0, highest1 = 0, highest2 = 0;
 
-    path.push_back(root);
-
-    cout << PathDistance() << endl;
-    PrintPath();
-    cout << endl;
-
-    while(path.size() <= sz)
+    for(int i = 0; i < sz; i++)
     {
-        next = NextNodeNI();
-        visited[next] = true;
-        dist = INF;
-
-        cout << next + 1<< endl;
-
-        for(int i = 0; i < (path.size() - 1); i++)
+        for(int j = i+1; j < sz; j++)
         {
-            distNew = GetDistance(cityList[path[i]], cityList[next]) + GetDistance(cityList[path[i+1]], cityList[next]) - GetDistance(cityList[path[i]], cityList[path[i+1]]);
-
-            if(distNew < dist)
+            if(i == root || j == root || i == j)
             {
-                dist = distNew;
-                idx = i + 1;
+                savingTable[i][j] = INF;
             }
-        }
 
-        //right shift
-        path.push_back(INF);
-
-        for(int i = path.size() - 1; i > idx; i--)
-        {
-            path[i] = path[i - 1];
-        }
-
-        path[idx] = next;
-    }
-
-    cout << PathDistance() << endl;
-    PrintPath();
-}
-
-int NextNodeCI()
-{
-    int dist = INF, result, distNew;
-
-    for(int j = 0; j < sz; j++)
-    {
-        if(!visited[j])
-        {
-            for(int i = 0; i < path.size() - 1; i++)
+            else
             {
-                distNew = GetDistance(cityList[path[i]], cityList[j]) + GetDistance(cityList[path[i+1]], cityList[j]) - GetDistance(cityList[path[i]], cityList[path[i+1]]);
-                if(distNew < dist)
+                savingTable[i][j] = GetDistance(cityList[root], cityList[i]) + GetDistance(cityList[root], cityList[j]) - GetDistance(cityList[i], cityList[j]);
+                savingTable[j][i] = savingTable[i][j];
+
+                if (savingTable[i][j] > highest)
                 {
-                    dist = distNew;
-                    result = j;
+                    highest = savingTable[i][j];
+                    head = i;
+                    tail = j;
                 }
             }
         }
     }
 
-    return result;
-}
+    pathInitial.push_front(head);
+    pathInitial.push_back(tail);
+    visited[head] = true;
+    visited[tail] = true;
 
-void CheapestInsertion(int root)
-{
-    int n = 3, next, dist = INF, distNew, idx;
-
-    fill(visited.begin(),visited.end(),false);
-    path.clear();
-
-    path.push_back(root);
-    visited[root] = true;
-
-    next = GetNearestNeighbour(root);
-    path.push_back(next);
-    visited[next] = true;
-
-    path.push_back(root);
-
-    cout << PathDistance() << endl;
-    PrintPath();
-    cout << endl;
-
-    while(path.size() <= sz)
+    while(pathInitial.size() < sz-1)
     {
-        next = NextNodeCI();
-        visited[next] = true;
-        dist = INF;
+        head = pathInitial.front();
+        tail = pathInitial.back();
 
-        cout << next + 1 << endl;
-
-        for(int i = 0; i < (path.size() - 1); i++)
+        for(int i = 0; i < sz; i++)
         {
-            distNew = GetDistance(cityList[path[i]], cityList[next]) + GetDistance(cityList[path[i+1]], cityList[next]) - GetDistance(cityList[path[i]], cityList[path[i+1]]);
-
-            if(distNew < dist)
+            if(!visited[i])
             {
-                dist = distNew;
-                idx = i + 1;
+                if(highest1 < savingTable[head][i])
+                {
+                    highest1 = savingTable[head][i];
+                    matha = i;
+                }
             }
         }
 
-        //right shift
-        path.push_back(INF);
-
-        for(int i = path.size() - 1; i > idx; i--)
+         for(int i = 0; i < sz; i++)
         {
-            path[i] =path[i - 1];
+            if(!visited[i])
+            {
+                if(highest2 < savingTable[tail][i])
+                {
+                    highest2 = savingTable[tail][i];
+                    lej = i;
+                }
+            }
         }
 
-        path[idx] = next;
+        if(matha != lej)
+        {
+            pathInitial.push_front(matha);
+            pathInitial.push_back(lej);
+            visited[matha] = true;
+            visited[lej] = true;
+        }
 
-        n++;
+        if(matha == lej)
+        {
+            if(highest1 > highest2)
+            {
+                pathInitial.push_front(matha);
+                visited[matha] = true;
+            }
+
+            else
+            {
+                pathInitial.push_back(lej);
+                visited[lej] = true;
+            }
+        }
+
+        highest1 = 0.0;
+        highest2 = 0.0;
     }
 
-    cout << PathDistance() << endl;
+    pathInitial.push_back(root);
+    pathInitial.push_front(root);
+
+    for(int i = 0; i <= sz; i++)
+    {
+        path.push_back(pathInitial.front());
+        pathInitial.pop_front();
+    }
+
+    cout << "Path distance for Savings heuristics: " << PathDistance() << endl << "Path: " << endl;
     PrintPath();
 }
 
@@ -304,7 +264,7 @@ void Opt2 (int root)
         if(!flag) break;
     }
 
-    cout << PathDistance() << endl;
+    cout << "Path distance for Two-Opt heuristics: " <<  PathDistance() << endl << "Path: " << endl;
     PrintPath();
 }
 
@@ -312,7 +272,7 @@ int main()
 {
     int n, m;
 
-    freopen("in.txt","r",stdin);
+    freopen("burma14.tsp","r",stdin);
 
     scanf("%d", &sz);
 
@@ -320,11 +280,8 @@ int main()
     cityList.resize(sz);
 
     GetMap();
-    //PrintMap();
-    //NearestNeighbour(0);
-    //NearestInsertion(0);
-    //CheapestInsertion(0);
-    Opt2(0);
+
+    Savings(0);
 
     return 0;
 }
