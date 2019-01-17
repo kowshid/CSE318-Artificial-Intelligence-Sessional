@@ -639,7 +639,12 @@ void task2()
                 }
             }
 
-            if(distCur < distNN[idx])
+            if (distCur == distNN[0] || distCur == distNN[1] || distCur == distNN[2])
+            {
+
+            }
+
+            else if (distCur < distNN[idx])
             {
                 pathsNN[idx].clear();
                 for(int i : path)
@@ -698,7 +703,11 @@ void task2()
                 }
             }
 
-            if(distCur < distS[idx])
+            if (distCur == distS[0] || distCur == distS[1] || distCur == distS[2])
+            {
+
+            }
+            else if(distCur < distS[idx])
             {
                 pathsS[idx].clear();
                 for(int i : path)
