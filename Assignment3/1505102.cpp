@@ -8,6 +8,7 @@ using namespace std;
 int sz;
 int bestNNidx, worstNNidx, bestSidx, worstSidx;
 double cost;
+double distNN[3],  distS[3];
 vector <pr> cityList;
 vector <int> path;
 vector <bool> visited;
@@ -442,12 +443,11 @@ void SavingsRandom(int root)
     cout << "Path Distance : " << PathDistance(path) << endl;
 }
 
-void TwoOptFirst (int root, vector <int> pathTemp)
+void TwoOptFirst (vector <int> pathTemp)
 {
-    double dist = PathDistance(path);
+    double dist = PathDistance(pathTemp);
     double distNew;
     bool flag;
-    int i = 1;
 
     while(true)
     {
@@ -479,13 +479,13 @@ void TwoOptFirst (int root, vector <int> pathTemp)
         if(!flag) break;
     }
 
-    cout << "Path distance after applying Two-Opt heuristics: " <<  PathDistance(pathTemp) << endl << "Path: ";
-    PrintPath(pathTemp);
+    cout << "After applying Two-Opt First heuristics: " <<  PathDistance(pathTemp) << endl;
+    //PrintPath(pathTemp);
 }
 
-void TwoOptBest (int root, vector <int> pathTemp)
+void TwoOptBest (vector <int> pathTemp)
 {
-    double dist = PathDistance(path);
+    double dist = PathDistance(pathTemp);
     double distNew;
     bool flag;
     int i = 1;
@@ -519,8 +519,8 @@ void TwoOptBest (int root, vector <int> pathTemp)
         if(!flag) break;
     }
 
-    cout << "Path distance after applying Two-Opt heuristics: " <<  PathDistance(pathTemp) << endl << "Path: ";
-    PrintPath(pathTemp);
+    cout << "Path distance after applying Two-Opt heuristics: " <<  PathDistance(pathTemp) << endl;
+    //PrintPath(pathTemp);
 }
 
 void task1()
@@ -589,8 +589,8 @@ void task2()
 {
     cout << endl << "In task2 " << endl << endl;
 
-    int j = 0, idx, iterationNumber = 6;
-    double distNN[3] = {INF, INF, INF},  distS[3] = {INF, INF, INF};
+    int j = 0, idx, iterationNumber = 10;
+//    double distNN[3] = {INF, INF, INF},  distS[3] = {INF, INF, INF};
     double high, distCur;
     double bestNN = INF, worstNN = 0.0, bestS = INF, worstS = 0.0, avgNN = 0.0, avgS = 0.0;
 
@@ -710,6 +710,7 @@ void task2()
             else if(distCur < distS[idx])
             {
                 pathsS[idx].clear();
+
                 for(int i : path)
                 {
                     pathsS[idx].push_back(i);
@@ -750,20 +751,72 @@ void task2()
 
 void task3()
 {
-    NearestNeighbour(bestNNidx, 1);
-    TwoOptBest(bestNNidx, path);
+    vector <int> tempPath;
 
-    cout << endl << endl;
+    cout << endl << "Applying Two-Opt First Improvement: " << endl;
+    cout << endl << "On NearestNeighbor Randomized" << endl;
 
-    //Savings(bestSidx);
-    //Opt2(bestSidx);
+    for(int i = 0; i < 3; i++)
+    {
+        tempPath.clear();
+        for(int k : pathsNN[i])
+        {
+            tempPath.push_back(k);
+        }
+        //cout << "path " << i+1 << " : "; PrintPath(pathsNN[i]);
+        cout << "Initial Path Distance " << i+1 << " : " << distNN[i] << endl;
+        TwoOptFirst(tempPath);
+    }
+
+    cout << endl << "On Savings Randomized" << endl;
+
+    for(int i = 0; i < 3; i++)
+    {
+        tempPath.clear();
+        for(int k : pathsS[i])
+        {
+            tempPath.push_back(k);
+        }
+        //cout << "path " << i+1 << " : "; PrintPath(pathsS[i]);
+        cout << "Initial Path Distance " << i+1 << " : " << distS[i] << endl;
+        TwoOptFirst(tempPath);
+    }
+
+    cout << endl << "Applying Two-Opt Best Improvement: " << endl;
+    cout << endl << "On NearestNeighbor Randomized" << endl;
+
+    for(int i = 0; i < 3; i++)
+    {
+        tempPath.clear();
+        for(int k : pathsNN[i])
+        {
+            tempPath.push_back(k);
+        }
+        //cout << "path " << i+1 << " : "; PrintPath(pathsNN[i]);
+        cout << "Initial Path Distance " << i+1 << " : " << distNN[i] << endl;
+        TwoOptBest(tempPath);
+    }
+
+    cout << endl << "On Savings Randomized" << endl;
+
+    for(int i = 0; i < 3; i++)
+    {
+        tempPath.clear();
+        for(int k : pathsS[i])
+        {
+            tempPath.push_back(k);
+        }
+        //cout << "path " << i+1 << " : "; PrintPath(pathsS[i]);
+        cout << "Initial Path Distance " << i+1 << " : " << distS[i] << endl;
+        TwoOptBest(tempPath);
+    }
 }
 
 int main()
 {
     srand(time(NULL));
 
-    freopen("burma14.tsp","r",stdin);
+    freopen("st70.tsp","r",stdin);
 
     scanf("%d", &sz);
 
@@ -778,7 +831,7 @@ int main()
 
     task1();
     task2();
-   // task3();
+    task3();
 
     return 0;
 }
