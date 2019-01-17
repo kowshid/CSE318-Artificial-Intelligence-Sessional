@@ -7,7 +7,6 @@ using namespace std;
 
 int sz;
 int bestNNidx, worstNNidx, bestSidx, worstSidx;
-double bestNN, worstNN, bestS, worstS;
 double cost;
 vector <pr> cityList;
 vector <int> path;
@@ -181,7 +180,7 @@ void NearestNeighbour(int root, int a)
     path.push_back(root);
 
     cout << "Path distance for NearestNeighbour heuristics: " <<  PathDistance(path) << endl << "Path: ";
-    PrintPath(path);
+    //PrintPath(path);
 }
 
 void Savings(int root)
@@ -512,6 +511,7 @@ void TwoOptBest (int root, vector <int> pathTemp)
 void task1()
 {
     int random;
+    double bestNN = INF, worstNN = 0.0, bestS = INF, worstS = 0.0;
 
     for(int i = 0; i < 5; i++)
     {
@@ -560,6 +560,7 @@ void task2()
 {
     int j = 0, idx;
     double dist[3] = {INF, INF, INF}, distCur;
+    double bestNN = INF, worstNN = 0.0, bestS = INF, worstS = 0.0;
 
     for(int i = 0; i < 6; i++)
     {
@@ -642,10 +643,11 @@ void task2()
 //    cout << "Worst cost using Savings (randomized) heuristics: " << worstS << endl << endl;
 
     for(int i = 0; i < 3; i++)
-        {
-            cout << "path " << i << ": ";
-            PrintPath(paths[i]);
-        }
+    {
+        cout << "path " << i << ": ";
+        PrintPath(paths[i]);
+        cout << "cost " << dist[i] << endl;
+    }
 }
 
 void task3()
@@ -662,7 +664,6 @@ void task3()
 int main()
 {
     srand(time(NULL));
-    bestS = INF, bestNN = INF, worstS = 0, worstNN = 0;
 
     freopen("burma14.tsp","r",stdin);
 
