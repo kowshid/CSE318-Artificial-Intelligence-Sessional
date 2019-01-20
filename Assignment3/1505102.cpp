@@ -7,7 +7,7 @@ using namespace std;
 
 int sz;
 int bestNNidx, worstNNidx, bestSidx, worstSidx;
-double cost, actualCost;
+double cost, actualCost, tempCost;
 double distNN[4],  distS[4];
 vector <pr> cityList;
 vector <int> path;
@@ -17,7 +17,7 @@ vector <double> costTableS;
 vector <pair<int, int>> vpr;
 vector <vector <int>> pathsNN;
 vector <vector <int>> pathsS;
-ofstream myfile("1505102.txt");
+ofstream myfile("1505102.txt", ofstream::app);
 
 void GetMap()
 {
@@ -196,7 +196,7 @@ void NearestNeighbour(int root, int a)
     {
         //myfile << "Path: ";
         //PrintPath(path);
-        myfile << "Path Distance : " << PathDistance(path) << endl;
+       // myfile << "Path Distance : " << PathDistance(path) << endl;
     }
 }
 
@@ -442,7 +442,7 @@ void SavingsRandom(int root)
 
     //myfile << "Path: ";
     //PrintPath(path);
-    myfile << "Path Distance : " << PathDistance(path) << endl;
+    //myfile << "Path Distance : " << PathDistance(path) << endl;
 }
 
 void TwoOptFirst (vector <int> path)
@@ -488,7 +488,9 @@ void TwoOptFirst (vector <int> path)
         if(!flag) break;
     }
 
-    myfile << "After applying Two-Opt First heuristics: " <<  PathDistance(pathTemp) << endl;
+    tempCost = PathDistance(pathTemp);
+
+   // myfile << "After applying : " <<  tempCost << endl;
     //PrintPath(pathTemp);
 }
 
@@ -535,13 +537,14 @@ void TwoOptBest (vector <int> path)
         if(!flag) break;
     }
 
-    myfile << "Path distance after applying Two-Opt heuristics: " <<  PathDistance(pathTemp) << endl;
+    tempCost = PathDistance(pathTemp);
+    //myfile << "After applying : " <<  tempCost << endl;
     //PrintPath(pathTemp);
 }
 
 void task1()
 {
-    myfile  << "In task1 " << endl << endl;
+    myfile << endl << "In task1 " << endl << endl;
 
     int random;
     double bestNN = INF, worstNN = 0.0, bestS = INF, worstS = 0.0, avgNN = 0, avgS = 0.0;
@@ -610,7 +613,7 @@ void task2()
     double high, distCur;
     double bestNN = INF, worstNN = 0.0, bestS = INF, worstS = 0.0, avgNN = 0.0, avgS = 0.0;
 
-    myfile << "Using NearestNeighbor (randomized) heuristics" << endl;
+    //myfile << "Using NearestNeighbor (randomized) heuristics" << endl;
 
     for(int i = 0; i < iterationNumber; i++)
     {
@@ -680,7 +683,7 @@ void task2()
 
     j = 0;
 
-    myfile << endl << "Using Savings (randomized) heuristics" << endl;
+    //myfile << endl << "Using Savings (randomized) heuristics" << endl;
 
     for(int i = 0; i < iterationNumber; i++)
     {
@@ -777,7 +780,8 @@ void task2()
 
 void task3()
 {
-    double bestNN = INF, worstNN = 0.0, bestS = INF, worstS = 0.0, tempDist;
+    double bestNN_F = INF, bestNN_B = INF, worstNN = 0.0, bestS_F = INF, bestS_B = INF, worstS = 0.0, avgNN_F = 0.0, avgS_F = 0.0, avgNN_B = 0.0, avgS_B = 0.0;
+
     NearestNeighbour(bestNNidx, 1);
 
     for(int i : path)
@@ -796,52 +800,136 @@ void task3()
 
     distS[3] = PathDistance(pathsS[3]);
 
-    vector <int> tempPath;
-
     myfile << endl << "Applying Two-Opt First Improvement: " << endl;
-    myfile << endl << "On NearestNeighbor Randomized" << endl;
+    //myfile << endl << "On NearestNeighbor Randomized" << endl;
 
     for(int i = 0; i < 4; i++)
     {
         //myfile << "path " << i+1 << " : "; PrintPath(pathsNN[i]);
-        myfile << "Initial Path Distance " << i+1 << " : " << distNN[i] << endl;
+        //myfile << "Initial Path Distance " << i+1 << " : " << distNN[i] << endl;
         TwoOptFirst(pathsNN[i]);
+
+        if(tempCost < bestNN_F)
+        {
+            bestNN_F = tempCost;
+        }
+
+        if(tempCost > worstNN)
+        {
+            worstNN = tempCost;
+        }
+
+        avgNN_F += tempCost;
     }
 
-    myfile << endl << "On Savings Randomized" << endl;
+    avgNN_F = avgNN_F/4.0;
+
+    //myfile << endl << "On Savings Randomized" << endl;
 
     for(int i = 0; i < 4; i++)
     {
         //myfile << "path " << i+1 << " : "; PrintPath(pathsS[i]);
-        myfile << "Initial Path Distance " << i+1 << " : " << distS[i] << endl;
+        //myfile << "Initial Path Distance " << i+1 << " : " << distS[i] << endl;
         TwoOptFirst(pathsS[i]);
+
+        if(tempCost < bestS_F)
+        {
+            bestS_F = tempCost;
+        }
+
+        if(tempCost > worstS)
+        {
+            worstS = tempCost;
+        }
+
+        avgS_F += tempCost;
     }
+
+    avgS_F = avgS_F/4.0;
+
+    myfile << endl << "Applying on NearestNeighbor paths: " << endl;
+    myfile <<  "Best cost : " << bestNN_F << endl;
+    myfile << "Worst cost : " << worstNN << endl;
+    myfile << "Average cost : " << avgNN_F << endl << endl;
+
+    myfile << endl << "Applying on Savings paths: " << endl;
+    myfile <<  "Best cost : " << bestS_F << endl;
+    myfile << "Worst cost : " << worstS << endl;
+    myfile << "Average cost : " << avgS_F << endl << endl;
+
+    worstNN = 0.0, worstS = 0.0;
 
     myfile << endl << "Applying Two-Opt Best Improvement: " << endl;
-    myfile << endl << "On NearestNeighbor Randomized" << endl;
+    //myfile << endl << "On NearestNeighbor Randomized" << endl;
 
     for(int i = 0; i < 4; i++)
     {
         //myfile << "path " << i+1 << " : "; PrintPath(pathsNN[i]);
-        myfile << "Initial Path Distance " << i+1 << " : " << distNN[i] << endl;
+       // myfile << "Initial Path Distance " << i+1 << " : " << distNN[i] << endl;
         TwoOptBest(pathsNN[i]);
+
+        if(tempCost < bestNN_B)
+        {
+            bestNN_B = tempCost;
+        }
+
+        if(tempCost > worstNN)
+        {
+            worstNN = tempCost;
+        }
+
+        avgNN_B += tempCost;
     }
 
-    myfile << endl << "On Savings Randomized" << endl;
+    avgNN_B = avgNN_B/4.0;
+
+   // myfile << endl << "On Savings Randomized" << endl;
 
     for(int i = 0; i < 4; i++)
     {
         //myfile << "path " << i+1 << " : "; PrintPath(pathsS[i]);
-        myfile << "Initial Path Distance " << i+1 << " : " << distS[i] << endl;
+        //myfile << "Initial Path Distance " << i+1 << " : " << distS[i] << endl;
         TwoOptBest(pathsS[i]);
+
+        if(tempCost < bestS_B)
+        {
+            bestS_B = tempCost;
+        }
+
+        if(tempCost > worstS)
+        {
+            worstS = tempCost;
+        }
+
+        avgS_B += tempCost;
     }
+
+    avgS_B = avgS_B/4.0;
+
+    myfile << endl << "Applying on NearestNeighbor paths: " << endl;
+    myfile <<  "Best cost : " << bestNN_B << endl;
+    myfile << "Worst cost : " << worstNN << endl;
+    myfile << "Average cost : " << avgNN_B << endl << endl;
+
+    myfile << endl << "Applying on Savings paths: " << endl;
+    myfile <<  "Best cost : " << bestS_B << endl;
+    myfile << "Worst cost : " << worstS << endl;
+    myfile << "Average cost : " << avgS_B << endl << endl;
+
+    myfile << endl << "Using First improvement" << endl;
+    myfile << "NearestNeighbor path is " << bestNN_F/actualCost*100 << "%" << endl;
+    myfile << "Savings path is " << bestS_F/actualCost*100 << "%" << endl;
+
+    myfile << endl << "Using Best improvement" << endl;
+    myfile << "NearestNeighbor path is " << bestNN_B/actualCost*100 << "%" << endl;
+    myfile << "Savings path is " << bestS_B/actualCost*100 << "%" << endl;
 }
 
 int main()
 {
     srand(time(NULL));
 
-    freopen("berlin52.tsp", "r", stdin);
+    freopen("st70.tsp", "r", stdin);
     //freopen("1505102.txt", "w", stdin);
 
     scanf("%d", &sz);
