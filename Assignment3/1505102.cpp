@@ -752,7 +752,7 @@ void task2()
     avgS = avgS/iterationNumber;
 
     myfile << endl << "NearestNeighbor (randomized) heuristics: " << endl;
-    myfile << endl << "Best root node : " << bestNNidx+1 << endl;
+    myfile << endl << "Best source node : " << bestNNidx+1 << endl;
     myfile << "Best cost :"  << bestNN << endl;
     myfile << "Worst cost : " << worstNN << endl;
     myfile << "Average cost : " << avgNN << endl << endl;
@@ -761,7 +761,7 @@ void task2()
     {
         //myfile << "pathNN " << i << ": ";
         //PrintPath(pathsNN[i]);
-        myfile << "cost " << distNN[i] << endl;
+        //myfile << "cost " << distNN[i] << endl;
     }
 
     myfile << endl << "In Savings (randomized) heuristics: " <<endl;
@@ -774,7 +774,7 @@ void task2()
     {
         //myfile << "pathS " << i << ": ";
         //PrintPath(pathsS[i]);
-        myfile << "cost " << distS[i] << endl;
+        //myfile << "cost " << distS[i] << endl;
     }
 }
 
@@ -929,7 +929,13 @@ int main()
 {
     srand(time(NULL));
 
+    //freopen("pr76.tsp", "r", stdin);
+    //myfile << endl << "Evaluating pr76.tsp" << endl;
+    //freopen("berlin52.tsp", "r", stdin);
+    //myfile << endl << "Evaluating berlin52.tsp" << endl;
     freopen("st70.tsp", "r", stdin);
+    myfile << endl << "Evaluating st70.tsp" <<  endl;
+
     //freopen("1505102.txt", "w", stdin);
 
     scanf("%d", &sz);
