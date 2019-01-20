@@ -7,8 +7,8 @@ using namespace std;
 
 int sz;
 int bestNNidx, worstNNidx, bestSidx, worstSidx;
-double cost;
-double distNN[3],  distS[3];
+double cost, actualCost;
+double distNN[4],  distS[4];
 vector <pr> cityList;
 vector <int> path;
 vector <bool> visited;
@@ -17,6 +17,7 @@ vector <double> costTableS;
 vector <pair<int, int>> vpr;
 vector <vector <int>> pathsNN;
 vector <vector <int>> pathsS;
+ofstream myfile("1505102.txt");
 
 void GetMap()
 {
@@ -29,7 +30,8 @@ void GetMap()
         cityList[i] = make_pair(x, y);
     }
 
-//    printf("Got Map\n");
+    cin >> actualCost;
+    //myfile << "Actual Cost : " << actualCost << endl;
 }
 
 void PrintMap()
@@ -67,10 +69,10 @@ void PrintPath(vector <int> pathTemp)
 {
     for(int i = 0; i < pathTemp.size(); i++)
     {
-        cout<<pathTemp[i]+1<<"-->";
+        myfile <<pathTemp[i]+1 << "-->";
     }
 
-    cout << endl;
+    myfile << endl;
 }
 
 int GetNearestNeighbour(int root)
@@ -171,7 +173,7 @@ void NearestNeighbour(int root, int a)
 
     if(choice == 2) //greedy_randomized
     {
-        //cout << "Check inside randomized" << endl;
+        //myfile << "Check inside randomized" << endl;
         while(n < sz)
         {
             t = GetNearestNeighbourRandom(t);
@@ -186,15 +188,15 @@ void NearestNeighbour(int root, int a)
 
     if (choice == 1)
     {
-        cout << "NearestNeighbor heuristic Path distance :" << PathDistance(path) << endl;
+        myfile << "NearestNeighbor heuristic Path distance :" << PathDistance(path) << endl;
     //PrintPath(path);
     }
 
     if(choice == 2)
     {
-        cout << "Path: ";
-        PrintPath(path);
-        cout << "Path Distance : " << PathDistance(path) << endl;
+        //myfile << "Path: ";
+        //PrintPath(path);
+        myfile << "Path Distance : " << PathDistance(path) << endl;
     }
 }
 
@@ -304,7 +306,7 @@ void Savings(int root)
         path.push_back(i);
     }
 
-    cout << "Savings heuristics Path distance :" << PathDistance(path) << endl;
+    myfile << "Savings heuristics Path distance :" << PathDistance(path) << endl;
     //PrintPath(path);
 }
 
@@ -438,13 +440,20 @@ void SavingsRandom(int root)
         path.push_back(i);
     }
 
-    cout << "Path: ";
-    PrintPath(path);
-    cout << "Path Distance : " << PathDistance(path) << endl;
+    //myfile << "Path: ";
+    //PrintPath(path);
+    myfile << "Path Distance : " << PathDistance(path) << endl;
 }
 
-void TwoOptFirst (vector <int> pathTemp)
+void TwoOptFirst (vector <int> path)
 {
+    vector <int> pathTemp;
+    pathTemp.clear();
+    for(int k : path)
+    {
+        pathTemp.push_back(k);
+    }
+
     double dist = PathDistance(pathTemp);
     double distNew;
     bool flag;
@@ -479,12 +488,19 @@ void TwoOptFirst (vector <int> pathTemp)
         if(!flag) break;
     }
 
-    cout << "After applying Two-Opt First heuristics: " <<  PathDistance(pathTemp) << endl;
+    myfile << "After applying Two-Opt First heuristics: " <<  PathDistance(pathTemp) << endl;
     //PrintPath(pathTemp);
 }
 
-void TwoOptBest (vector <int> pathTemp)
+void TwoOptBest (vector <int> path)
 {
+    vector <int> pathTemp;
+    pathTemp.clear();
+    for(int k : path)
+    {
+        pathTemp.push_back(k);
+    }
+
     double dist = PathDistance(pathTemp);
     double distNew;
     bool flag;
@@ -519,13 +535,13 @@ void TwoOptBest (vector <int> pathTemp)
         if(!flag) break;
     }
 
-    cout << "Path distance after applying Two-Opt heuristics: " <<  PathDistance(pathTemp) << endl;
+    myfile << "Path distance after applying Two-Opt heuristics: " <<  PathDistance(pathTemp) << endl;
     //PrintPath(pathTemp);
 }
 
 void task1()
 {
-    cout  << "In task1 " << endl << endl;
+    myfile  << "In task1 " << endl << endl;
 
     int random;
     double bestNN = INF, worstNN = 0.0, bestS = INF, worstS = 0.0, avgNN = 0, avgS = 0.0;
@@ -534,7 +550,7 @@ void task1()
     {
         random = rand()%sz;
 
-        cout << "Source is " << random+1 << endl;
+        myfile << "Source is " << random+1 << endl;
 
         NearestNeighbour(random, 1);
         costTableNN[random] = PathDistance(path);
@@ -572,29 +588,29 @@ void task1()
     avgNN = avgNN/5.0;
     avgS = avgS/5.0;
 
-    cout << endl << "Using NearestNeighbor heuristics: " << endl;
-    cout << endl << "Best source node : " << bestNNidx+1 << endl;
-    cout <<  "Best cost : " << costTableNN[bestNNidx] << endl;
-    cout << "Worst cost : " << costTableNN[worstNNidx] << endl;
-    cout << "Average cost : " << avgNN << endl;
+    myfile << endl << "Using NearestNeighbor heuristics: " << endl;
+    myfile << endl << "Best source node : " << bestNNidx+1 << endl;
+    myfile <<  "Best cost : " << costTableNN[bestNNidx] << endl;
+    myfile << "Worst cost : " << costTableNN[worstNNidx] << endl;
+    myfile << "Average cost : " << avgNN << endl;
 
-    cout << endl << "Using Savings heuristics: " << endl;
-    cout << endl << "Best source node : " << bestSidx+1 << endl;
-    cout <<  "Best cost : " << costTableS[bestSidx] << endl;
-    cout << "Worst cost : " << costTableS[worstSidx] << endl;
-    cout << "Average cost : " << avgS << endl;
+    myfile << endl << "Using Savings heuristics: " << endl;
+    myfile << endl << "Best source node : " << bestSidx+1 << endl;
+    myfile <<  "Best cost : " << costTableS[bestSidx] << endl;
+    myfile << "Worst cost : " << costTableS[worstSidx] << endl;
+    myfile << "Average cost : " << avgS << endl;
 }
 
 void task2()
 {
-    cout << endl << "In task2 " << endl << endl;
+    myfile << endl << "In task2 " << endl << endl;
 
     int j = 0, idx, iterationNumber = 10;
 //    double distNN[3] = {INF, INF, INF},  distS[3] = {INF, INF, INF};
     double high, distCur;
     double bestNN = INF, worstNN = 0.0, bestS = INF, worstS = 0.0, avgNN = 0.0, avgS = 0.0;
 
-    cout << "Using NearestNeighbor (randomized) heuristics" << endl;
+    myfile << "Using NearestNeighbor (randomized) heuristics" << endl;
 
     for(int i = 0; i < iterationNumber; i++)
     {
@@ -618,13 +634,18 @@ void task2()
 
         if(j < 3)
         {
+            pathsNN[j].clear();
+
             for(int i : path)
             {
                 pathsNN[j].push_back(i);
             }
 
-            distNN[j] = PathDistance(pathsNN[j]);
-            j++;
+            if(PathDistance(pathsNN[j]) != worstNN && PathDistance(pathsNN[j]) != bestNN)
+            {
+                distNN[j] = PathDistance(pathsNN[j]);
+                j++;
+            }
         }
 
         else
@@ -659,7 +680,7 @@ void task2()
 
     j = 0;
 
-    cout << endl << "Using Savings (randomized) heuristics" << endl;
+    myfile << endl << "Using Savings (randomized) heuristics" << endl;
 
     for(int i = 0; i < iterationNumber; i++)
     {
@@ -682,6 +703,8 @@ void task2()
 
         if(j < 3)
         {
+            pathsS[j].clear();
+
             for(int i : path)
             {
                 pathsS[j].push_back(i);
@@ -707,6 +730,7 @@ void task2()
             {
 
             }
+
             else if(distCur < distS[idx])
             {
                 pathsS[idx].clear();
@@ -724,91 +748,92 @@ void task2()
     avgNN = avgNN/iterationNumber;
     avgS = avgS/iterationNumber;
 
-    cout << endl << "Best root node for NearestNeighbor heuristics: " << bestNNidx+1 << endl;
-    cout << "Best cost using NearestNeighbor (randomized) heuristics: " << bestNN << endl;
-    cout << "Worst cost using NearestNeighbor (randomized) heuristics: " << worstNN << endl;
-    cout << "Average cost using NearestNeighbor (randomized) heuristics: " << avgNN << endl << endl;
+    myfile << endl << "NearestNeighbor (randomized) heuristics: " << endl;
+    myfile << endl << "Best root node : " << bestNNidx+1 << endl;
+    myfile << "Best cost :"  << bestNN << endl;
+    myfile << "Worst cost : " << worstNN << endl;
+    myfile << "Average cost : " << avgNN << endl << endl;
 
     for(int i = 0; i < 3; i++)
     {
-        cout << "pathNN " << i << ": ";
-        PrintPath(pathsNN[i]);
-        cout << "cost " << distNN[i] << endl;
+        //myfile << "pathNN " << i << ": ";
+        //PrintPath(pathsNN[i]);
+        myfile << "cost " << distNN[i] << endl;
     }
 
-    cout << endl << "Best root node for Saving heuristics: " << bestSidx+1 << endl;
-    cout << "Best cost using Savings (randomized) heuristics: " << bestS << endl;
-    cout << "Worst cost using Savings (randomized) heuristics: " << worstS << endl;
-    cout << "Average cost using Savings (randomized) heuristics: " << avgS << endl << endl;
+    myfile << endl << "In Savings (randomized) heuristics: " <<endl;
+    myfile << endl << "Best source : " << bestSidx+1 << endl;
+    myfile << "Best cost : "  << bestS << endl;
+    myfile << "Worst cost : " << worstS << endl;
+    myfile << "Average cost : " << avgS << endl << endl;
 
     for(int i = 0; i < 3; i++)
     {
-        cout << "pathS " << i << ": ";
-        PrintPath(pathsS[i]);
-        cout << "cost " << distS[i] << endl;
+        //myfile << "pathS " << i << ": ";
+        //PrintPath(pathsS[i]);
+        myfile << "cost " << distS[i] << endl;
     }
 }
 
 void task3()
 {
+    double bestNN = INF, worstNN = 0.0, bestS = INF, worstS = 0.0, tempDist;
+    NearestNeighbour(bestNNidx, 1);
+
+    for(int i : path)
+    {
+        pathsNN[3].push_back(i);
+    }
+
+    distNN[3] = PathDistance(pathsNN[3]);
+
+    Savings(bestSidx);
+
+    for(int i : path)
+    {
+        pathsS[3].push_back(i);
+    }
+
+    distS[3] = PathDistance(pathsS[3]);
+
     vector <int> tempPath;
 
-    cout << endl << "Applying Two-Opt First Improvement: " << endl;
-    cout << endl << "On NearestNeighbor Randomized" << endl;
+    myfile << endl << "Applying Two-Opt First Improvement: " << endl;
+    myfile << endl << "On NearestNeighbor Randomized" << endl;
 
-    for(int i = 0; i < 3; i++)
+    for(int i = 0; i < 4; i++)
     {
-        tempPath.clear();
-        for(int k : pathsNN[i])
-        {
-            tempPath.push_back(k);
-        }
-        //cout << "path " << i+1 << " : "; PrintPath(pathsNN[i]);
-        cout << "Initial Path Distance " << i+1 << " : " << distNN[i] << endl;
-        TwoOptFirst(tempPath);
+        //myfile << "path " << i+1 << " : "; PrintPath(pathsNN[i]);
+        myfile << "Initial Path Distance " << i+1 << " : " << distNN[i] << endl;
+        TwoOptFirst(pathsNN[i]);
     }
 
-    cout << endl << "On Savings Randomized" << endl;
+    myfile << endl << "On Savings Randomized" << endl;
 
-    for(int i = 0; i < 3; i++)
+    for(int i = 0; i < 4; i++)
     {
-        tempPath.clear();
-        for(int k : pathsS[i])
-        {
-            tempPath.push_back(k);
-        }
-        //cout << "path " << i+1 << " : "; PrintPath(pathsS[i]);
-        cout << "Initial Path Distance " << i+1 << " : " << distS[i] << endl;
-        TwoOptFirst(tempPath);
+        //myfile << "path " << i+1 << " : "; PrintPath(pathsS[i]);
+        myfile << "Initial Path Distance " << i+1 << " : " << distS[i] << endl;
+        TwoOptFirst(pathsS[i]);
     }
 
-    cout << endl << "Applying Two-Opt Best Improvement: " << endl;
-    cout << endl << "On NearestNeighbor Randomized" << endl;
+    myfile << endl << "Applying Two-Opt Best Improvement: " << endl;
+    myfile << endl << "On NearestNeighbor Randomized" << endl;
 
-    for(int i = 0; i < 3; i++)
+    for(int i = 0; i < 4; i++)
     {
-        tempPath.clear();
-        for(int k : pathsNN[i])
-        {
-            tempPath.push_back(k);
-        }
-        //cout << "path " << i+1 << " : "; PrintPath(pathsNN[i]);
-        cout << "Initial Path Distance " << i+1 << " : " << distNN[i] << endl;
-        TwoOptBest(tempPath);
+        //myfile << "path " << i+1 << " : "; PrintPath(pathsNN[i]);
+        myfile << "Initial Path Distance " << i+1 << " : " << distNN[i] << endl;
+        TwoOptBest(pathsNN[i]);
     }
 
-    cout << endl << "On Savings Randomized" << endl;
+    myfile << endl << "On Savings Randomized" << endl;
 
-    for(int i = 0; i < 3; i++)
+    for(int i = 0; i < 4; i++)
     {
-        tempPath.clear();
-        for(int k : pathsS[i])
-        {
-            tempPath.push_back(k);
-        }
-        //cout << "path " << i+1 << " : "; PrintPath(pathsS[i]);
-        cout << "Initial Path Distance " << i+1 << " : " << distS[i] << endl;
-        TwoOptBest(tempPath);
+        //myfile << "path " << i+1 << " : "; PrintPath(pathsS[i]);
+        myfile << "Initial Path Distance " << i+1 << " : " << distS[i] << endl;
+        TwoOptBest(pathsS[i]);
     }
 }
 
@@ -816,16 +841,24 @@ int main()
 {
     srand(time(NULL));
 
-    freopen("st70.tsp","r",stdin);
+    freopen("berlin52.tsp", "r", stdin);
+    //freopen("1505102.txt", "w", stdin);
 
     scanf("%d", &sz);
+
+    visited.clear();
+    cityList.clear();
+    costTableNN.clear();
+    costTableS.clear();
+    pathsNN.clear();
+    pathsS.clear();
 
     visited.resize(sz);
     cityList.resize(sz);
     costTableNN.resize(sz);
     costTableS.resize(sz);
-    pathsNN.resize(3);
-    pathsS.resize(3);
+    pathsNN.resize(4);
+    pathsS.resize(4);
 
     GetMap();
 
@@ -833,5 +866,6 @@ int main()
     task2();
     task3();
 
+    myfile.close();
     return 0;
 }
