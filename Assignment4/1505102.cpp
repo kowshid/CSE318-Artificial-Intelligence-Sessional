@@ -124,6 +124,7 @@ public:
             {
                 pit[1][i] = 0;
             }
+            //cout << "check total0\n";
             //total1 = 0;
         }
         else if(total1 == 0)
@@ -133,13 +134,14 @@ public:
             {
                 pit[0][i] = 0;
             }
-            //total0 = 0;
+            //cout << "check total1\n";
+            total0 = 0;
         }
 
         if(total0 == 0 && total1 == 0)
         {
-            cout << "\nFinal Board\n";
-            PrintBoard();
+            //cout << "\nFinal Board\n";
+            //PrintBoard();
             if(store[0] == store[1]) return 2;
             else if(store[0] > store[1]) return 0;
             else return 1;
@@ -221,14 +223,6 @@ int ChooseHeuristic(Mancala board, int player, int choice)
     else if(choice == 4) return H4(board, player);
 }
 
-int UtilityCalculate(Mancala board, int player)
-{
-    if(player == 0)
-        return ChooseHeuristic(board, player, player0Heuristic);
-    else
-         return ChooseHeuristic(board, player, player1Heuristic);
-}
-
 bool TerminalTest(Mancala board, int depth, int player)
 {
     if(depth == 1)
@@ -255,12 +249,13 @@ pr MAX_VALUE(Mancala board, int alpha, int beta, int depth, int player)
 {
     if(TerminalTest(board, depth, player))
     {
-        return make_pair(UtilityCalculate(board, player),-1);
+        if(player == 0)
+            return make_pair(ChooseHeuristic(board, player, player0Heuristic), -1);
+        else
+             return make_pair(ChooseHeuristic(board, player, player0Heuristic), -1);
     }
 
-    pr v;
-    v.first = NEG_INF;
-    v.second = -1;
+    pr v = make_pair(NEG_INF, -1);
 
     for(int i = 0; i < 6; i++)
     {
@@ -273,7 +268,7 @@ pr MAX_VALUE(Mancala board, int alpha, int beta, int depth, int player)
         int nxtTurn = tempBoard.Move(player, i);
         int tempV;
 
-        if(nxtTurn == player)
+        if(nxtTurn == player) //bonus move
         {
             additionalMove++;
             tempV = MAX_VALUE(tempBoard, alpha, beta, depth-1, player).first;
@@ -304,12 +299,13 @@ pr MIN_VALUE(Mancala board, int alpha, int beta, int depth, int player)
 {
     if(TerminalTest(board,depth,player))
     {
-        return make_pair(UtilityCalculate(board,player),-1);
+        if(player == 0)
+            return make_pair(ChooseHeuristic(board, player, player0Heuristic), -1);
+        else
+             return make_pair(ChooseHeuristic(board, player, player0Heuristic), -1);
     }
 
-    pr v;
-    v.first = POS_INF;
-    v.second = -1;
+    pr v = make_pair(POS_INF, -1);
 
     for(int i = 0; i < 6; i++)
     {
@@ -347,20 +343,24 @@ pr MIN_VALUE(Mancala board, int alpha, int beta, int depth, int player)
     return v;
 }
 
-int MinMax(Mancala board, int player) // return the index to be changed
+int MinMax(Mancala board, int player) // returns the index to be played
 {
     int alpha = NEG_INF;
     int beta = POS_INF;
+
     additionalMove = 0;
     stonesCaptured = 0;
+
     pair< int,int > v;
     v = MAX_VALUE(board, alpha, beta, depth, player);
-    return v.second;// second is index which should be changed
+
+    return v.second;// second is the index which will be played, -1 if reached a result/depth
 }
 
 int main()
 {
     srand(time(NULL));
+    freopen("output.txt", "w", stdout);
     //Mancala drawn(1);
     Mancala board;
     cout << "Initial State : \n";
@@ -376,6 +376,7 @@ int main()
 
     int player = rand()%2;
     int idx;
+    int checkflag;
 
 //    if(board.GameEnd() == 2)
 //    {
@@ -385,24 +386,24 @@ int main()
 
     while(true)
     {
-        cout << "\n**Player"<< player << "'s turn**\n";
+        cout << "\nPlayer"<< player << "'s turn\n";
         idx = MinMax(board, player);
-        cout<< "Moving " << idx << "th Position\n";
+        cout<< "Moving " << idx+1 << "th Position\n";
 
         player = board.Move(player, idx);
         board.PrintBoard();
-
-         if(board.GameEnd() == 0)
+        checkflag = board.GameEnd();
+         if(checkflag == 0)
         {
             cout << "\nPlayer 0 is the winner\n";
             break;
         }
-        if(board.GameEnd() == 1)
+        else if(checkflag == 1)
         {
             cout << "\nPlayer 1 is the winner\n";
             break;
         }
-        if(board.GameEnd() == 2)
+        else if(checkflag == 2)
         {
             cout << "\nMatch Drawn\n";
             break;
