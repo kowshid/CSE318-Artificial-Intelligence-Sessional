@@ -9,7 +9,7 @@ using namespace std;
 int W1, W2, W3, W4;
 int additionalMove, stonesCaptured;
 int player0Heuristic, player1Heuristic;
-int depth = 7;
+int depthMax = 7;
 
 class Mancala
 {
@@ -74,6 +74,7 @@ public:
                 store[player] = store[player] + pit[nextPlayer][5 - currentPit] + 1;
                 pit[nextPlayer][5 - currentPit] = 0;
                 currentSeed--;
+                stonesCaptured += pit[nextPlayer][5 - currentPit];
                 continue;
             }
 
@@ -105,7 +106,7 @@ public:
         return tempBoard;
     }
 
-    int GameEnd() //0 for player 0, 1 for player 1, 2 for unfinished
+    int GameEnd() //0 for player 0, 1 for player 1, 2 for draw, 3 for unfinished
     {
         int total0 = 0;
         int total1 = 0;
@@ -158,13 +159,9 @@ public:
             cout << "  " << pit[0][6-i-1];
         }
 
-        cout << endl;
-        cout << store[0];
-
+        cout << endl << store[0];
         cout << "                  ";
-
-        cout << store[1];
-        cout << endl;
+        cout << store[1]  << endl;
 
         for(int i = 0; i < 6; i ++)
         {
@@ -278,13 +275,13 @@ pr MAX_VALUE(Mancala board, int alpha, int beta, int depth, int player)
             tempV = MIN_VALUE(tempBoard, alpha, beta, depth-1, (1 - player)).first;
         }
 
-        if(v.first < tempV)
+        if(v.first < tempV) //maximizing
         {
             v.first = tempV;
             v.second = i;
         }
 
-        if(v.first >= beta)
+        if(v.first >= beta) //for pruning
         {
             return v;
         }
@@ -326,18 +323,18 @@ pr MIN_VALUE(Mancala board, int alpha, int beta, int depth, int player)
         {
             tempV = MAX_VALUE(tempBoard, alpha, beta, depth-1, (1 - player)).first;
         }
-        //v = min(tempV,v);
-        if(v.first > tempV)
+
+        if(v.first > tempV) //minimizing
         {
             v.first = tempV;
             v.second = i;
         }
-        if(v.first <= alpha)
+        if(v.first <= alpha) //for pruning
         {
             return v;
         }
 
-        beta = min(beta,v.first);
+        beta = min(beta, v.first);
     }
 
     return v;
@@ -351,10 +348,10 @@ int MinMax(Mancala board, int player) // returns the index to be played
     additionalMove = 0;
     stonesCaptured = 0;
 
-    pair< int,int > v;
-    v = MAX_VALUE(board, alpha, beta, depth, player);
+    pr v;
+    v = MAX_VALUE(board, alpha, beta, depthMax, player);
 
-    return v.second;// second is the index which will be played, -1 if reached a result/depth
+    return v.second; //second is the index which will be played, -1 if reached a result/depth
 }
 
 int main()
@@ -393,7 +390,8 @@ int main()
         player = board.Move(player, idx);
         board.PrintBoard();
         checkflag = board.GameEnd();
-         if(checkflag == 0)
+
+        if(checkflag == 0)
         {
             cout << "\nPlayer 0 is the winner\n";
             break;
